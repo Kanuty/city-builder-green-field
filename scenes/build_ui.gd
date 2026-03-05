@@ -13,6 +13,14 @@ func _on_potato_farm_button_pressed():
 	untoggle_destroy_button()
 	building_selected.emit("Potato Farm")
 
+func _on_clay_pit_button_pressed():
+	untoggle_destroy_button()
+	building_selected.emit("Clay Pit")
+
+func _on_pottery_house_button_pressed():
+	untoggle_destroy_button()
+	building_selected.emit("Pottery House")
+
 func _on_warehouse_button_pressed():
 	untoggle_destroy_button()
 	building_selected.emit("Warehouse")

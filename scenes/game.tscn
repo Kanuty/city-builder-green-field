@@ -63,9 +63,6 @@ mesh = SubResource("PlaneMesh_1")
 
 [node name="Buildings" type="Node3D" parent="." unique_id=37950396]
 
-[node name="Farm" parent="Buildings" unique_id=1646148540 instance=ExtResource("3_farm")]
-building_name = "Farm"
-
 [node name="PlacementPreview" type="MeshInstance3D" parent="." unique_id=1539041678]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
 mesh = SubResource("PlaneMesh_preview")

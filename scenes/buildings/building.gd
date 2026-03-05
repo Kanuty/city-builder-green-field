@@ -11,10 +11,14 @@ enum State { NO_WORKERS, IDLE, PRODUCING }
 @export var spawn_units: bool = false
 @export var unit_type: PackedScene
 @export var max_spawned_units: int = 1
+@export var consumes_goods: bool = false
+@export var input_goods_type: String = ""
+@export var max_input_capacity: int = 10
 
 var current_state: State = State.NO_WORKERS
 var current_workers: int = 0
 var stored_goods: int = 0
+var stored_input_goods: int = 0
 var current_production_progress: float = 0.0
 
 var current_warehouse_reservation: Node = null
@@ -25,6 +29,14 @@ var current_spawned_units: int = 0
 @onready var production_timer: Timer = $ProductionTimer
 @onready var delivery_timer: Timer = $DeliveryTimer
 @onready var timeout_timer: Timer = $TimeoutTimer
+
+var input_sprites: Array = []
+var output_sprites: Array = []
+
+var potato_texture = preload("res://img/goods/potato.png")
+var carrots_texture = preload("res://img/goods/carrots_01.png")
+var clay_texture = preload("res://img/clay/clay.png")
+var pottery_texture = preload("res://img/clay/pottery.png")
 
 func _ready():
 	if not Global.PRODUCIBLE_GOODS.has(goods_type):
@@ -55,17 +67,76 @@ func _on_warehouse_registered():
 func update_state():
 	if stored_goods >= 4 or stored_goods >= max_capacity:
 		try_send_to_warehouse()
+
+	if consumes_goods and stored_input_goods < max_input_capacity:
+		try_fetch_from_warehouse()
+
 	var old_state = current_state
 
 	if current_workers == 0:
 		current_state = State.NO_WORKERS
 	elif stored_goods >= max_capacity:
 		current_state = State.IDLE
+	elif consumes_goods and stored_input_goods == 0:
+		current_state = State.IDLE
 	else:
 		current_state = State.PRODUCING
 
+	_update_visuals()
+
+	if current_state == State.IDLE and consumes_goods and stored_input_goods == 0:
+		if timeout_timer.is_stopped():
+			timeout_timer.start(5.0) # poll every 5 seconds
+
 	if old_state != current_state:
 		on_state_changed()
+
+func _update_visuals():
+	for s in input_sprites:
+		s.queue_free()
+	input_sprites.clear()
+
+	for s in output_sprites:
+		s.queue_free()
+	output_sprites.clear()
+
+	for i in range(stored_input_goods):
+		var sprite = Sprite3D.new()
+		sprite.axis = Vector3.AXIS_Y
+		sprite.pixel_size = 0.001
+		sprite.render_priority = 1
+		sprite.position = Vector3(-0.3, 0.05 * i, 0)
+		if input_goods_type == "Carrots":
+			sprite.texture = carrots_texture
+		elif input_goods_type == "Potato":
+			sprite.texture = potato_texture
+		elif input_goods_type == "Clay":
+			sprite.texture = clay_texture
+		elif input_goods_type == "Pottery":
+			sprite.texture = pottery_texture
+		else:
+			sprite.texture = potato_texture
+		add_child(sprite)
+		input_sprites.append(sprite)
+
+	for i in range(stored_goods):
+		var sprite = Sprite3D.new()
+		sprite.axis = Vector3.AXIS_Y
+		sprite.pixel_size = 0.001
+		sprite.render_priority = 1
+		sprite.position = Vector3(0.3, 0.05 * i, 0)
+		if goods_type == "Carrots":
+			sprite.texture = carrots_texture
+		elif goods_type == "Potato":
+			sprite.texture = potato_texture
+		elif goods_type == "Clay":
+			sprite.texture = clay_texture
+		elif goods_type == "Pottery":
+			sprite.texture = pottery_texture
+		else:
+			sprite.texture = potato_texture
+		add_child(sprite)
+		output_sprites.append(sprite)
 
 func on_state_changed():
 	match current_state:
@@ -80,13 +151,15 @@ func on_state_changed():
 			start_production()
 
 func start_production():
-	if current_workers > 0:
+	if current_workers > 0 and (not consumes_goods or stored_input_goods > 0):
 		var scale = float(current_workers) / float(max_workers)
 		production_timer.wait_time = production_base_time / scale
 		production_timer.start()
 
 func _on_production_timer_timeout():
 	if stored_goods < max_capacity:
+		if consumes_goods:
+			stored_input_goods -= 1
 		stored_goods += 1
 		print(building_name, " produced ", goods_type, ". Total: ", stored_goods)
 
@@ -146,6 +219,43 @@ func receive_returned_goods(amount: int):
 	stored_goods = min(max_capacity, stored_goods + amount)
 	update_state()
 
+func receive_fetched_goods(amount: int):
+	stored_input_goods = min(max_input_capacity, stored_input_goods + amount)
+	update_state()
+
+func try_fetch_from_warehouse():
+	if current_warehouse_reservation != null or current_spawned_units >= max_spawned_units:
+		return
+
+	var needed = max_input_capacity - stored_input_goods
+	if needed <= 0:
+		return
+
+	# Find a warehouse that has the input_goods_type
+	var target_warehouse = null
+	var min_dist = INF
+
+	for warehouse in Global.warehouses:
+		if warehouse.stored_items.has(input_goods_type) and warehouse.stored_items[input_goods_type] > 0:
+			var dist = global_position.distance_to(warehouse.global_position)
+			if dist < min_dist:
+				min_dist = dist
+				target_warehouse = warehouse
+
+	if target_warehouse:
+		var amount_to_fetch = min(needed, target_warehouse.stored_items[input_goods_type], 4)
+		if amount_to_fetch > 0:
+			if target_warehouse.reserve_for_fetch(amount_to_fetch, input_goods_type):
+				if unit_type:
+					var unit = unit_type.instantiate()
+					get_parent().add_child(unit)
+					unit.global_position = global_position
+					unit.delivery_finished.connect(_on_unit_delivery_finished)
+					unit.delivery_failed.connect(_on_unit_delivery_failed)
+					unit.setup_fetch(self, target_warehouse, input_goods_type, amount_to_fetch, timeout_timer.wait_time)
+					current_spawned_units += 1
+					print(building_name, " spawned unit to fetch ", amount_to_fetch, " ", input_goods_type)
+
 func _on_delivery_timer_timeout():
 	if is_instance_valid(current_warehouse_reservation):
 		current_warehouse_reservation.receive_delivery(amount_reserved, goods_type)
@@ -158,6 +268,10 @@ func _on_delivery_timer_timeout():
 	update_state()
 
 func _on_timeout_timer_timeout():
+	if current_state == State.IDLE and consumes_goods and stored_input_goods == 0:
+		update_state() # Poll for goods if we are starved
+		return
+
 	if is_instance_valid(current_warehouse_reservation):
 		print(building_name, " delivery timed out!")
 		current_warehouse_reservation.cancel_reservation(amount_reserved)
