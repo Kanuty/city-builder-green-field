@@ -25,14 +25,6 @@ func _on_warehouse_button_pressed():
 	untoggle_destroy_button()
 	building_selected.emit("Warehouse")
 
-func _on_cooking_den_button_pressed():
-	untoggle_destroy_button()
-	building_selected.emit("Cooking Den")
-
-func _on_house_button_pressed():
-	untoggle_destroy_button()
-	building_selected.emit("House")
-
 func _on_destroy_button_toggled(button_pressed: bool):
 	destruction_mode_toggled.emit(button_pressed)
 

@@ -19,6 +19,7 @@ var potato_texture = preload("res://img/goods/potato.png")
 var carrots_texture = preload("res://img/goods/carrots_01.png")
 var clay_texture = preload("res://img/clay/clay.png")
 var pottery_texture = preload("res://img/clay/pottery.png")
+var food_texture = preload("res://img/food/food.png")
 
 @onready var animation_player: AnimatedSprite3D = $AnimatedSprite3D
 @onready var timeout_timer: Timer = $TimeoutTimer
@@ -122,7 +123,7 @@ func _reach_destination():
 	if is_fetching:
 		if returning:
 			if amount > 0 and is_instance_valid(spawner):
-				spawner.receive_fetched_goods(amount)
+				spawner.receive_fetched_goods(amount, goods_type)
 				delivery_finished.emit(amount)
 			else:
 				delivery_failed.emit()
@@ -175,6 +176,8 @@ func _update_visuals():
 				item_node.texture = clay_texture
 			elif goods_type == "Pottery":
 				item_node.texture = pottery_texture
+			elif goods_type == "Food":
+				item_node.texture = food_texture
 			else:
 				item_node.texture = potato_texture # fallback
 

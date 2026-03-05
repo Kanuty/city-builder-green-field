@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://ds47rd4i30pl5"]
+
+[ext_resource type="PackedScene" uid="uid://b8y4j5k6l7m8p" path="res://scenes/buildings/building.tscn" id="1_building"]
+[ext_resource type="PackedScene" uid="uid://d1u2t3n4u5v6w" path="res://scenes/units/unit.tscn" id="1_unit"]
+[ext_resource type="Texture2D" uid="uid://bnnjj0cvd67b0" path="res://img/farm/farm.png" id="2_farm"]
+[ext_resource type="Texture2D" uid="uid://tjkm21uxdcrf" path="res://img/farm/farm1.png" id="3_farm1"]
+[ext_resource type="Texture2D" uid="uid://djhho0a4mc8aa" path="res://img/farm/farm2.png" id="4_farm2"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_farm"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_farm2")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_farm")
+}],
+"loop": true,
+"name": &"no_workers",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_farm1")
+}],
+"loop": true,
+"name": &"producing",
+"speed": 5.0
+}]
+
+[node name="Farm" instance=ExtResource("1_building")]
+building_name = "Cooking Den"
+goods_type = "Food"
+spawn_units = true
+unit_type = ExtResource("1_unit")
+consumes_goods = true
+input_goods_type = "Potato"
+secondary_input_goods_type = "Carrots"
+items_per_production = 2
+
+[node name="AnimatedSprite3D" parent="." index="0"]
+sprite_frames = SubResource("SpriteFrames_farm")
+animation = &"no_workers"

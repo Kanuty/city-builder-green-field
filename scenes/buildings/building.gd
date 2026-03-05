@@ -13,12 +13,15 @@ enum State { NO_WORKERS, IDLE, PRODUCING }
 @export var max_spawned_units: int = 1
 @export var consumes_goods: bool = false
 @export var input_goods_type: String = ""
+@export var secondary_input_goods_type: String = ""
 @export var max_input_capacity: int = 10
+@export var items_per_production: int = 1
 
 var current_state: State = State.NO_WORKERS
 var current_workers: int = 0
 var stored_goods: int = 0
 var stored_input_goods: int = 0
+var stored_input_goods_types: Array[String] = []
 var current_production_progress: float = 0.0
 
 var current_warehouse_reservation: Node = null
@@ -38,7 +41,6 @@ var carrots_texture = preload("res://img/goods/carrots_01.png")
 var clay_texture = preload("res://img/clay/clay.png")
 var pottery_texture = preload("res://img/clay/pottery.png")
 
-var produced_goods_icon: Sprite3D
 
 func _ready():
 	if not Global.PRODUCIBLE_GOODS.has(goods_type):
@@ -49,24 +51,8 @@ func _ready():
 
 	Global.warehouse_registered.connect(_on_warehouse_registered)
 
-	produced_goods_icon = Sprite3D.new()
-	produced_goods_icon.axis = Vector3.AXIS_Y
-	produced_goods_icon.pixel_size = 0.003
-	produced_goods_icon.render_priority = 2
-	produced_goods_icon.position = Vector3(0, 1.0, 0)
 
-	if goods_type == "Carrots":
-		produced_goods_icon.texture = carrots_texture
-	elif goods_type == "Potato":
-		produced_goods_icon.texture = potato_texture
-	elif goods_type == "Clay":
-		produced_goods_icon.texture = clay_texture
-	elif goods_type == "Pottery":
-		produced_goods_icon.texture = pottery_texture
-	else:
-		produced_goods_icon.texture = potato_texture
 
-	add_child(produced_goods_icon)
 
 	update_state()
 	# Try to get workers from global workforce
@@ -99,14 +85,14 @@ func update_state():
 		current_state = State.NO_WORKERS
 	elif stored_goods >= max_capacity:
 		current_state = State.IDLE
-	elif consumes_goods and stored_input_goods == 0:
+	elif consumes_goods and stored_input_goods < items_per_production:
 		current_state = State.IDLE
 	else:
 		current_state = State.PRODUCING
 
 	_update_visuals()
 
-	if current_state == State.IDLE and consumes_goods and stored_input_goods == 0:
+	if current_state == State.IDLE and consumes_goods and stored_input_goods < items_per_production:
 		if timeout_timer.is_stopped():
 			timeout_timer.start(5.0) # poll every 5 seconds
 
@@ -173,7 +159,7 @@ func on_state_changed():
 			start_production()
 
 func start_production():
-	if current_workers > 0 and (not consumes_goods or stored_input_goods > 0):
+	if current_workers > 0 and (not consumes_goods or stored_input_goods >= items_per_production):
 		var scale = float(current_workers) / float(max_workers)
 		production_timer.wait_time = production_base_time / scale
 		production_timer.start()
@@ -181,7 +167,10 @@ func start_production():
 func _on_production_timer_timeout():
 	if stored_goods < max_capacity:
 		if consumes_goods:
-			stored_input_goods -= 1
+			stored_input_goods -= items_per_production
+			for i in range(items_per_production):
+				if stored_input_goods_types.size() > 0:
+					stored_input_goods_types.pop_front()
 		stored_goods += 1
 		print(building_name, " produced ", goods_type, ". Total: ", stored_goods)
 
@@ -217,10 +206,8 @@ func try_send_to_warehouse():
 						stored_goods -= amount_to_send # Immediately remove goods from building
 						update_state()
 						print(building_name, " spawned unit for delivery of ", amount_to_send)
-					else:
 						# If we want to spawn units but can't right now, we cancel the reservation we just made
 						warehouse.cancel_reservation(amount_to_send)
-				else:
 					current_warehouse_reservation = warehouse
 					amount_reserved = amount_to_send
 					delivery_timer.start()
@@ -241,8 +228,11 @@ func receive_returned_goods(amount: int):
 	stored_goods = min(max_capacity, stored_goods + amount)
 	update_state()
 
-func receive_fetched_goods(amount: int):
+func receive_fetched_goods(amount: int, fetched_goods_type: String = ""):
 	stored_input_goods = min(max_input_capacity, stored_input_goods + amount)
+	var type_to_add = fetched_goods_type if fetched_goods_type != "" else input_goods_type
+	for i in range(amount):
+		stored_input_goods_types.append(type_to_add)
 	update_state()
 
 func try_fetch_from_warehouse():
@@ -253,30 +243,38 @@ func try_fetch_from_warehouse():
 	if needed <= 0:
 		return
 
-	# Find a warehouse that has the input_goods_type
+	var goods_to_fetch = input_goods_type
 	var target_warehouse = null
 	var min_dist = INF
 
+	# If secondary input is defined, we can pick either
+	# To make it simple, we just check warehouses for any of the required goods
+	var search_types = [input_goods_type]
+	if secondary_input_goods_type != "":
+		search_types.append(secondary_input_goods_type)
+
 	for warehouse in Global.warehouses:
-		if warehouse.stored_items.has(input_goods_type) and warehouse.stored_items[input_goods_type] > 0:
-			var dist = global_position.distance_to(warehouse.global_position)
-			if dist < min_dist:
-				min_dist = dist
-				target_warehouse = warehouse
+		for g_type in search_types:
+			if warehouse.stored_items.has(g_type) and warehouse.stored_items[g_type] > 0:
+				var dist = global_position.distance_to(warehouse.global_position)
+				if dist < min_dist:
+					min_dist = dist
+					target_warehouse = warehouse
+					goods_to_fetch = g_type
 
 	if target_warehouse:
-		var amount_to_fetch = min(needed, target_warehouse.stored_items[input_goods_type], 4)
+		var amount_to_fetch = min(needed, target_warehouse.stored_items[goods_to_fetch], 4)
 		if amount_to_fetch > 0:
-			if target_warehouse.reserve_for_fetch(amount_to_fetch, input_goods_type):
+			if target_warehouse.reserve_for_fetch(amount_to_fetch, goods_to_fetch):
 				if unit_type:
 					var unit = unit_type.instantiate()
 					get_parent().add_child(unit)
 					unit.global_position = global_position
 					unit.delivery_finished.connect(_on_unit_delivery_finished)
 					unit.delivery_failed.connect(_on_unit_delivery_failed)
-					unit.setup_fetch(self, target_warehouse, input_goods_type, amount_to_fetch, timeout_timer.wait_time)
+					unit.setup_fetch(self, target_warehouse, goods_to_fetch, amount_to_fetch, timeout_timer.wait_time)
 					current_spawned_units += 1
-					print(building_name, " spawned unit to fetch ", amount_to_fetch, " ", input_goods_type)
+					print(building_name, " spawned unit to fetch ", amount_to_fetch, " ", goods_to_fetch)
 
 func _on_delivery_timer_timeout():
 	if is_instance_valid(current_warehouse_reservation):
@@ -290,7 +288,7 @@ func _on_delivery_timer_timeout():
 	update_state()
 
 func _on_timeout_timer_timeout():
-	if current_state == State.IDLE and consumes_goods and stored_input_goods == 0:
+	if current_state == State.IDLE and consumes_goods and stored_input_goods < items_per_production:
 		update_state() # Poll for goods if we are starved
 		return
 

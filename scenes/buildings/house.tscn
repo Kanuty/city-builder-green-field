@@ -1,0 +1,41 @@
+[gd_scene load_steps=5 format=3 uid="uid://d9a5b6c7d8e9f"]
+
+[ext_resource type="Script" path="res://scenes/buildings/house.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://djhho0a4mc8aa" path="res://img/farm/farm2.png" id="2_texture"]
+[ext_resource type="PackedScene" uid="uid://d1u2t3n4u5v6w" path="res://scenes/units/unit.tscn" id="3_unit"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_house"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_texture")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[node name="House" type="Node3D"]
+script = ExtResource("1_script")
+unit_type = ExtResource("3_unit")
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+axis = 1
+pixel_size = 0.0078125
+sprite_frames = SubResource("SpriteFrames_house")
+animation = &"idle"
+
+[node name="ConsumeTimer" type="Timer" parent="."]
+wait_time = 10.0
+autostart = true
+
+[node name="FetchTimer" type="Timer" parent="."]
+wait_time = 5.0
+autostart = true
+
+[node name="TimeoutTimer" type="Timer" parent="."]
+wait_time = 60.0
+
+[connection signal="timeout" from="ConsumeTimer" to="." method="_on_consume_timer_timeout"]
+[connection signal="timeout" from="FetchTimer" to="." method="_on_fetch_timer_timeout"]
