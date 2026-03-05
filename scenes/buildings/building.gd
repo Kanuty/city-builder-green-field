@@ -36,7 +36,7 @@ func _ready():
 	Global.magazine_registered.connect(_on_magazine_registered)
 	update_state()
 	# Try to get workers from global workforce
-	current_workers = Global.request_workers(max_workers)
+	current_workers = Global.request_workers(max_workers, self)
 	update_state()
 
 func _on_magazine_registered():
@@ -151,7 +151,15 @@ func _on_timeout_timer_timeout():
 	amount_reserved = 0
 	delivery_timer.stop()
 
+func get_needed_workers() -> int:
+	return max_workers - current_workers
+
+func assign_workers(amount: int):
+	current_workers += amount
+	update_state()
+
 func _exit_tree():
+	Global.unregister_building(self)
 	if is_instance_valid(current_magazine_reservation):
 		current_magazine_reservation.cancel_reservation(amount_reserved)
 	Global.return_workers(current_workers)
