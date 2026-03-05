@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://c8x4j5k6l7m8n"]
+[gd_scene load_steps=11 format=3 uid="uid://c8x4j5k6l7m8n"]
 
 [ext_resource type="Script" path="res://scenes/game.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://d8y4j5k6l7m8q" path="res://scenes/workforce_ui.tscn" id="2_ui"]
 [ext_resource type="PackedScene" uid="uid://c8x4j5k6l7m8p" path="res://scenes/buildings/farm.tscn" id="3_farm"]
+[ext_resource type="PackedScene" uid="uid://d9y4j5k6l7m8r" path="res://scenes/build_ui.tscn" id="4_buildui"]
 
 [sub_resource type="Shader" id="Shader_1"]
 code = "shader_type spatial;
@@ -27,6 +28,14 @@ background_color = Color(0.1, 0.1, 0.1, 1)
 ambient_light_source = 2
 ambient_light_color = Color(0.5, 0.5, 0.5, 1)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+transparency = 1
+albedo_color = Color(0, 0, 1, 0.5)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_preview"]
+material = SubResource("StandardMaterial3D_1")
+size = Vector2(1, 1)
+
 [node name="Game" type="Node3D"]
 script = ExtResource("1_script")
 
@@ -50,9 +59,17 @@ mesh = SubResource("PlaneMesh_1")
 
 [node name="WorkforceUI" parent="UI" instance=ExtResource("2_ui")]
 
+[node name="BuildUI" parent="UI" instance=ExtResource("4_buildui")]
+
 [node name="Buildings" type="Node3D" parent="."]
 
 [node name="Farm" parent="Buildings" instance=ExtResource("3_farm")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 building_name = "Farm"
 goods_type = "Carrots"
+
+[node name="PlacementPreview" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+mesh = SubResource("PlaneMesh_preview")
+
+[connection signal="building_selected" from="UI/BuildUI" to="." method="_on_build_ui_building_selected"]
