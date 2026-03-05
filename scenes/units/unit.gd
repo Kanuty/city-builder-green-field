@@ -14,6 +14,9 @@ var path: Array[Vector3] = []
 var target_index: int = 0
 var returning: bool = false
 
+var potato_texture = preload("res://img/goods/potato.png")
+var carrots_texture = preload("res://img/goods/carrots_01.png")
+
 @onready var animation_player: AnimatedSprite3D = $AnimatedSprite3D
 @onready var timeout_timer: Timer = $TimeoutTimer
 
@@ -118,6 +121,12 @@ func _update_visuals():
 		var item_node = get_node_or_null("Items/Item" + str(i + 1))
 		if item_node:
 			item_node.visible = i < amount
+			if goods_type == "Carrots":
+				item_node.texture = carrots_texture
+			elif goods_type == "Potato":
+				item_node.texture = potato_texture
+			else:
+				item_node.texture = potato_texture # fallback
 
 func _fail():
 	if not returning and is_instance_valid(warehouse):
