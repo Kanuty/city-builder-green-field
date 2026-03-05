@@ -10,6 +10,7 @@ var map_size: Vector2 = Vector2(20.0, 20.0)
 var max_view_range: Vector2 = Vector2(40.0, 40.0)
 
 var current_building_type: String = ""
+var destruction_mode_active: bool = false
 var occupied_tiles: Dictionary = {} # Vector2i -> Node3D
 var navigation_grid: AStarGrid2D
 var farm_scene = preload("res://scenes/buildings/farm.tscn")
@@ -17,6 +18,8 @@ var magasine_scene = preload("res://scenes/buildings/magasine.tscn")
 
 func _ready():
 	Global.game_node = self
+
+	$UI/BuildUI.destruction_mode_toggled.connect(_on_build_ui_destruction_mode_toggled)
 
 	# Initialize Navigation
 	navigation_grid = AStarGrid2D.new()
@@ -55,6 +58,14 @@ func _unhandled_input(event):
 				cancel_build_mode()
 		elif event.is_action_pressed("ui_cancel"):
 			cancel_build_mode()
+	elif destruction_mode_active:
+		if event is InputEventMouseButton:
+			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+				try_destroy_building()
+			elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+				$UI/BuildUI.untoggle_destroy_button()
+		elif event.is_action_pressed("ui_cancel"):
+			$UI/BuildUI.untoggle_destroy_button()
 
 func handle_camera_movement(delta):
 	var viewport_size = get_viewport().get_visible_rect().size
@@ -204,9 +215,35 @@ func get_path_to_destination(start_world: Vector3, end_world: Vector3) -> Array[
 
 	return path
 
+func try_destroy_building():
+	var world_pos = get_mouse_world_pos()
+	var grid_pos = world_to_grid(world_pos)
+
+	if occupied_tiles.has(grid_pos):
+		var building = occupied_tiles[grid_pos]
+		destroy_building(building)
+
+func destroy_building(building):
+	var size = building.get("grid_size") if "grid_size" in building else Vector2i(1, 1)
+	var grid_pos = world_to_grid(building.global_position - Vector3(size.x / 2.0, 0, size.y / 2.0))
+
+	for x in range(size.x):
+		for y in range(size.y):
+			occupied_tiles.erase(grid_pos + Vector2i(x, y))
+
+	update_navigation_for_building(grid_pos, size, false)
+	building.queue_free()
+
 func cancel_build_mode():
 	current_building_type = ""
 	placement_preview.visible = false
 
 func _on_build_ui_building_selected(building_type):
+	if building_type != "":
+		$UI/BuildUI.untoggle_destroy_button()
 	current_building_type = building_type
+
+func _on_build_ui_destruction_mode_toggled(active):
+	destruction_mode_active = active
+	if active:
+		cancel_build_mode()
