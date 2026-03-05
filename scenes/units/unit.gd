@@ -12,6 +12,7 @@ var amount: int
 
 var path: Array[Vector3] = []
 var target_index: int = 0
+var returning: bool = false
 
 @onready var animation_player: AnimatedSprite3D = $AnimatedSprite3D
 @onready var timeout_timer: Timer = $TimeoutTimer
@@ -43,6 +44,9 @@ func _process(delta):
 		_fail() # spawner destroyed, unit dies and goods are lost
 		return
 
+	if not is_instance_valid(magazine) and not returning:
+		start_return_to_spawner()
+
 	if path.size() == 0:
 		return
 
@@ -60,15 +64,31 @@ func _process(delta):
 		global_position += direction * move_dist
 
 func _reach_destination():
-	if is_instance_valid(magazine):
+	if returning:
+		if is_instance_valid(spawner):
+			spawner.receive_returned_goods(amount)
+		delivery_failed.emit() # Consider it failed as it didn't reach magazine
+		queue_free()
+	elif is_instance_valid(magazine):
 		magazine.receive_delivery(amount, goods_type)
 		delivery_finished.emit(amount)
 		queue_free()
 	else:
+		start_return_to_spawner()
+
+func start_return_to_spawner():
+	returning = true
+	if Global.game_node and is_instance_valid(spawner):
+		path = Global.game_node.get_path_to_destination(global_position, spawner.global_position)
+		if path.size() > 0:
+			target_index = 0
+		else:
+			_fail()
+	else:
 		_fail()
 
 func _fail():
-	if is_instance_valid(magazine):
+	if not returning and is_instance_valid(magazine):
 		magazine.cancel_reservation(amount)
 	delivery_failed.emit()
 	queue_free()

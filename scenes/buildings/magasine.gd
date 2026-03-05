@@ -17,6 +17,8 @@ func _ready():
 
 func _exit_tree():
 	Global.unregister_magazine(self)
+	for goods_type in stored_items:
+		Global.remove_goods(goods_type, stored_items[goods_type])
 
 func get_available_space() -> int:
 	return max_capacity - total_stored - reserved_space

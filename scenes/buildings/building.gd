@@ -127,6 +127,10 @@ func _on_unit_delivery_failed():
 	update_state()
 	print(building_name, " unit delivery failed.")
 
+func receive_returned_goods(amount: int):
+	stored_goods = min(max_capacity, stored_goods + amount)
+	update_state()
+
 func _on_delivery_timer_timeout():
 	if is_instance_valid(current_magazine_reservation):
 		current_magazine_reservation.receive_delivery(amount_reserved, goods_type)

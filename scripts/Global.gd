@@ -59,3 +59,8 @@ func add_goods(goods_id: String, amount: int):
 	else:
 		inventory[goods_id] = amount
 	goods_updated.emit(goods_id, inventory[goods_id])
+
+func remove_goods(goods_id: String, amount: int):
+	if inventory.has(goods_id):
+		inventory[goods_id] = max(0, inventory[goods_id] - amount)
+		goods_updated.emit(goods_id, inventory[goods_id])
