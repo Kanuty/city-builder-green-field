@@ -5,6 +5,7 @@ extends Node3D
 @export var max_capacity: int = 64
 
 var stored_items: Dictionary = {} # goods_type -> amount
+var reserved_for_fetch_items: Dictionary = {} # goods_type -> amount
 var total_stored: int = 0
 var reserved_space: int = 0
 
@@ -16,8 +17,8 @@ var next_slot_index: int = 0
 
 var potato_texture = preload("res://img/goods/potato.png")
 var carrots_texture = preload("res://img/goods/carrots_01.png")
-var clay_texture = preload("res://img/clay/clay.png")
-var pottery_texture = preload("res://img/clay/pottery.png")
+var clay_texture = preload("res://img/goods/clay.png")
+var pottery_texture = preload("res://img/goods/pottery.png")
 var food_texture = preload("res://img/goods/food.png")
 
 func _ready():
@@ -83,6 +84,11 @@ func _exit_tree():
 func get_available_space() -> int:
 	return max_capacity - total_stored - reserved_space
 
+func get_available_for_fetch(goods_type: String) -> int:
+	var total = stored_items.get(goods_type, 0)
+	var reserved = reserved_for_fetch_items.get(goods_type, 0)
+	return max(0, total - reserved)
+
 func reserve(amount: int) -> bool:
 	if get_available_space() >= amount:
 		reserved_space += amount
@@ -93,10 +99,24 @@ func cancel_reservation(amount: int):
 	reserved_space = max(0, reserved_space - amount)
 
 func reserve_for_fetch(amount: int, goods_type: String) -> bool:
+	if get_available_for_fetch(goods_type) >= amount:
+		if not reserved_for_fetch_items.has(goods_type):
+			reserved_for_fetch_items[goods_type] = 0
+		reserved_for_fetch_items[goods_type] += amount
+		return true
+	return false
+
+func cancel_fetch_reservation(amount: int, goods_type: String):
+	if reserved_for_fetch_items.has(goods_type):
+		reserved_for_fetch_items[goods_type] = max(0, reserved_for_fetch_items[goods_type] - amount)
+
+func remove_for_fetch(amount: int, goods_type: String):
 	if stored_items.has(goods_type) and stored_items[goods_type] >= amount:
 		stored_items[goods_type] -= amount
 		total_stored -= amount
 		Global.remove_goods(goods_type, amount)
+		if reserved_for_fetch_items.has(goods_type):
+			reserved_for_fetch_items[goods_type] = max(0, reserved_for_fetch_items[goods_type] - amount)
 		# Temporarily removing sprites for simplicity when fetching
 		var removed = 0
 		var keep_sprites = []
@@ -109,11 +129,6 @@ func reserve_for_fetch(amount: int, goods_type: String) -> bool:
 				keep_sprites.append(sprite)
 		item_sprites = keep_sprites
 		next_slot_index -= removed
-		return true
-	return false
-
-func remove_for_fetch(amount: int, goods_type: String):
-	pass # Logic is handled in reserve_for_fetch to ensure items aren't taken by others
 
 func receive_delivery(amount: int, goods_type: String):
 	reserved_space = max(0, reserved_space - amount)
