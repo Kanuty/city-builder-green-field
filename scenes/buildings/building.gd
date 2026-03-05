@@ -97,10 +97,15 @@ func try_send_to_magazine():
 	if current_magazine_reservation != null or stored_goods == 0:
 		return
 
+	# Only send if we have at least 4 items, OR if we are at max capacity
+	if stored_goods < 4 and stored_goods < max_capacity:
+		return
+
 	var magazine = Global.find_nearest_magazine(global_position)
 	if magazine:
 		var available = magazine.get_available_space()
-		var amount_to_send = min(stored_goods, available)
+		# Cannot send more than 4 items per transport
+		var amount_to_send = min(stored_goods, available, 4)
 
 		if amount_to_send > 0:
 			if magazine.reserve(amount_to_send):

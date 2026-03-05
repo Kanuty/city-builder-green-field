@@ -13,7 +13,8 @@ var current_building_type: String = ""
 var destruction_mode_active: bool = false
 var occupied_tiles: Dictionary = {} # Vector2i -> Node3D
 var navigation_grid: AStarGrid2D
-var farm_scene = preload("res://scenes/buildings/farm.tscn")
+var carrot_farm_scene = preload("res://scenes/buildings/carrot_farm.tscn")
+var potato_farm_scene = preload("res://scenes/buildings/potato_farm.tscn")
 var magasine_scene = preload("res://scenes/buildings/magasine.tscn")
 
 func _ready():
@@ -157,7 +158,7 @@ func is_area_free(grid_pos: Vector2i, size: Vector2i) -> bool:
 	return true
 
 func get_current_building_size() -> Vector2i:
-	if current_building_type == "Farm":
+	if current_building_type == "Carrot Farm" or current_building_type == "Potato Farm":
 		return Vector2i(1, 1)
 	elif current_building_type == "Magasine":
 		return Vector2i(2, 2)
@@ -178,8 +179,10 @@ func try_place_building():
 
 func place_building(grid_pos: Vector2i):
 	var new_building
-	if current_building_type == "Farm":
-		new_building = farm_scene.instantiate()
+	if current_building_type == "Carrot Farm":
+		new_building = carrot_farm_scene.instantiate()
+	elif current_building_type == "Potato Farm":
+		new_building = potato_farm_scene.instantiate()
 	elif current_building_type == "Magasine":
 		new_building = magasine_scene.instantiate()
 

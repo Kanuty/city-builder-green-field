@@ -25,6 +25,8 @@ func setup(p_spawner: Node3D, p_magazine: Node3D, p_goods_type: String, p_amount
 
 	timeout_timer.wait_time = p_timeout
 
+	_update_visuals()
+
 	if Global.game_node:
 		path = Global.game_node.get_path_to_destination(global_position, magazine.global_position)
 		if path.size() > 0:
@@ -45,7 +47,27 @@ func _process(delta):
 		return
 
 	if not is_instance_valid(magazine) and not returning:
+		# If we were heading to a magazine and it was destroyed, try to find a new one before returning
+		var new_magazine = Global.find_nearest_magazine(global_position)
+		if new_magazine:
+			if new_magazine.reserve(amount):
+				magazine = new_magazine
+				path = Global.game_node.get_path_to_destination(global_position, magazine.global_position)
+				target_index = 0
+				return # Continue in next frame with new path
+
 		start_return_to_spawner()
+
+	if returning:
+		# If we are returning to spawner, check if a new magazine became available
+		var new_magazine = Global.find_nearest_magazine(global_position)
+		if new_magazine:
+			if new_magazine.reserve(amount):
+				magazine = new_magazine
+				returning = false
+				path = Global.game_node.get_path_to_destination(global_position, magazine.global_position)
+				target_index = 0
+				return
 
 	if path.size() == 0:
 		return
@@ -86,6 +108,19 @@ func start_return_to_spawner():
 			_fail()
 	else:
 		_fail()
+
+func _update_visuals():
+	var color = Color.WHITE
+	if goods_type == "Carrots":
+		color = Color(1.0, 0.5, 0.0) # Orange
+	elif goods_type == "Potato":
+		color = Color(0.5, 0.35, 0.05) # Brownish
+
+	for i in range(4):
+		var item_node = get_node_or_null("Items/Item" + str(i + 1))
+		if item_node:
+			item_node.visible = i < amount
+			item_node.modulate = color
 
 func _fail():
 	if not returning and is_instance_valid(magazine):

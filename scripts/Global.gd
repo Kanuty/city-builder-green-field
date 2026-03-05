@@ -10,6 +10,10 @@ const PRODUCIBLE_GOODS = {
 	"Carrots": {
 		"name": "Carrots",
 		"base_price": 10
+	},
+	"Potato": {
+		"name": "Potato",
+		"base_price": 12
 	}
 }
 
@@ -21,7 +25,8 @@ var available_workforce: int = 100:
 			workforce_changed.emit.call_deferred(available_workforce)
 
 var inventory: Dictionary = {
-	"Carrots": 0
+	"Carrots": 0,
+	"Potato": 0
 }
 
 var magazines: Array = []
