@@ -25,7 +25,7 @@ func _ready():
 
 func receive_fetched_goods(amount: int, goods_type: String):
 	active_fetches -= 1
-	if goods_type == "Food" or goods_type == "Carrots" or goods_type == "Potato":
+	if goods_type == "Food":
 		stored_food = min(max_food_capacity, stored_food + amount)
 	elif goods_type == "Pottery":
 		stored_pottery = min(max_pottery_capacity, stored_pottery + amount)
@@ -39,14 +39,16 @@ func try_fetch_goods(goods_type: String, needed_amount: int) -> int:
 	var min_dist = INF
 
 	for warehouse in Global.warehouses:
-		if warehouse.stored_items.has(goods_type) and warehouse.stored_items[goods_type] > 0:
+		var available = warehouse.get_available_for_fetch(goods_type)
+		if available > 0:
 			var dist = global_position.distance_to(warehouse.global_position)
 			if dist < min_dist:
 				min_dist = dist
 				target_warehouse = warehouse
 
 	if target_warehouse:
-		var amount_to_fetch = min(needed_amount, target_warehouse.stored_items[goods_type], 4)
+		var available = target_warehouse.get_available_for_fetch(goods_type)
+		var amount_to_fetch = min(needed_amount, available, 4)
 		if amount_to_fetch > 0:
 			if target_warehouse.reserve_for_fetch(amount_to_fetch, goods_type):
 				if unit_type:
@@ -76,12 +78,6 @@ func _on_fetch_timer_timeout():
 		var fetched = 0
 		if needed > 0:
 			fetched = try_fetch_goods("Food", needed)
-			needed -= fetched
-		if needed > 0:
-			fetched = try_fetch_goods("Carrots", needed)
-			needed -= fetched
-		if needed > 0:
-			fetched = try_fetch_goods("Potato", needed)
 			needed -= fetched
 
 	if stored_pottery < pottery_threshold:

@@ -17,8 +17,8 @@ var is_fetching: bool = false
 
 var potato_texture = preload("res://img/goods/potato.png")
 var carrots_texture = preload("res://img/goods/carrots_01.png")
-var clay_texture = preload("res://img/clay/clay.png")
-var pottery_texture = preload("res://img/clay/pottery.png")
+var clay_texture = preload("res://img/goods/clay.png")
+var pottery_texture = preload("res://img/goods/pottery.png")
 var food_texture = preload("res://img/goods/food.png")
 
 @onready var animation_player: AnimatedSprite3D = $AnimatedSprite3D
@@ -129,7 +129,8 @@ func _reach_destination():
 				delivery_failed.emit()
 			queue_free()
 		elif is_instance_valid(warehouse):
-			# Already reserved
+			# Actually remove items from warehouse now that we've arrived
+			warehouse.remove_for_fetch(amount, goods_type)
 			start_return_to_spawner()
 		else:
 			start_return_to_spawner()
@@ -183,7 +184,10 @@ func _update_visuals():
 
 func _fail():
 	if not returning and is_instance_valid(warehouse):
-		warehouse.cancel_reservation(amount)
+		if is_fetching:
+			warehouse.cancel_fetch_reservation(amount, goods_type)
+		else:
+			warehouse.cancel_reservation(amount)
 	delivery_failed.emit()
 	queue_free()
 

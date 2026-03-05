@@ -38,8 +38,8 @@ var output_sprites: Array = []
 
 var potato_texture = preload("res://img/goods/potato.png")
 var carrots_texture = preload("res://img/goods/carrots_01.png")
-var clay_texture = preload("res://img/clay/clay.png")
-var pottery_texture = preload("res://img/clay/pottery.png")
+var clay_texture = preload("res://img/goods/clay.png")
+var pottery_texture = preload("res://img/goods/pottery.png")
 var food_texture = preload("res://img/goods/food.png")
 
 func _ready():
@@ -264,7 +264,8 @@ func try_fetch_from_warehouse():
 
 	for warehouse in Global.warehouses:
 		for g_type in search_types:
-			if warehouse.stored_items.has(g_type) and warehouse.stored_items[g_type] > 0:
+			var available_for_fetch = warehouse.get_available_for_fetch(g_type)
+			if available_for_fetch > 0:
 				var dist = global_position.distance_to(warehouse.global_position)
 				if dist < min_dist:
 					min_dist = dist
@@ -272,7 +273,8 @@ func try_fetch_from_warehouse():
 					goods_to_fetch = g_type
 
 	if target_warehouse:
-		var amount_to_fetch = min(needed, target_warehouse.stored_items[goods_to_fetch], 4)
+		var available_amount = target_warehouse.get_available_for_fetch(goods_to_fetch)
+		var amount_to_fetch = min(needed, available_amount, 4)
 		if amount_to_fetch > 0:
 			if target_warehouse.reserve_for_fetch(amount_to_fetch, goods_to_fetch):
 				if unit_type:
