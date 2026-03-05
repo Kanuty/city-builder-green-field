@@ -1,6 +1,7 @@
 extends Control
 
 @onready var workforce_label: Label = $Panel/MarginContainer/VBoxContainer/WorkforceLabel
+@onready var population_label: Label = $Panel/MarginContainer/VBoxContainer/PopulationLabel
 @onready var carrots_label: Label = $Panel/MarginContainer/VBoxContainer/CarrotsLabel
 @onready var potato_label: Label = $Panel/MarginContainer/VBoxContainer/PotatoLabel
 @onready var clay_label: Label = $Panel/MarginContainer/VBoxContainer/ClayLabel
@@ -9,8 +10,10 @@ extends Control
 
 func _ready():
 	Global.workforce_changed.connect(_on_workforce_changed)
+	Global.population_changed.connect(_on_population_changed)
 	Global.goods_updated.connect(_on_goods_updated)
 	_update_workforce_label(Global.available_workforce)
+	_update_population_label(Global.total_population)
 	_update_carrots_label(Global.inventory.get("Carrots", 0))
 	_update_potato_label(Global.inventory.get("Potato", 0))
 	_update_clay_label(Global.inventory.get("Clay", 0))
@@ -19,6 +22,9 @@ func _ready():
 
 func _on_workforce_changed(new_value: int):
 	_update_workforce_label(new_value)
+
+func _on_population_changed(new_value: int):
+	_update_population_label(new_value)
 
 func _on_goods_updated(goods_id: String, new_value: int):
 	if goods_id == "Carrots":
@@ -34,6 +40,9 @@ func _on_goods_updated(goods_id: String, new_value: int):
 
 func _update_workforce_label(value: int):
 	workforce_label.text = "Workforce: " + str(value)
+
+func _update_population_label(value: int):
+	population_label.text = "Population: " + str(value)
 
 func _update_carrots_label(value: int):
 	carrots_label.text = "Carrots: " + str(value)

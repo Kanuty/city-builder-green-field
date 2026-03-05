@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://cx6i8j8l8p3j8"]
+
+[ext_resource type="Script" path="res://scenes/units/pop.gd" id="1_1"]
+[ext_resource type="Texture2D" uid="uid://cx2o6pmcuknio0" path="res://img/characters/token_2.png" id="2_2"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_2")
+}],
+"loop": true,
+"name": &"moving",
+"speed": 5.0
+}]
+
+[node name="Pop" type="Node3D"]
+script = ExtResource("1_1")
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0.05, 0)
+pixel_size = 0.00390625
+billboard = 1
+alpha_cut = 1
+sprite_frames = SubResource("SpriteFrames_7")
+animation = &"moving"

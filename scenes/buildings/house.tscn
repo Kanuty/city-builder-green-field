@@ -35,7 +35,7 @@ wait_time = 5.0
 autostart = true
 
 [node name="TimeoutTimer" type="Timer" parent="."]
-wait_time = 60.0
+wait_time = 300.0
 
 [connection signal="timeout" from="ConsumeTimer" to="." method="_on_consume_timer_timeout"]
 [connection signal="timeout" from="FetchTimer" to="." method="_on_fetch_timer_timeout"]

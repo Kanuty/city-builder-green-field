@@ -1,6 +1,7 @@
 extends Node
 
 signal workforce_changed(new_value)
+signal population_changed(new_value)
 signal goods_updated(goods_id, new_value)
 signal warehouse_registered()
 
@@ -35,6 +36,13 @@ var available_workforce: int = 100:
 		available_workforce = max(0, value)
 		if old_value != available_workforce:
 			workforce_changed.emit.call_deferred(available_workforce)
+
+var total_population: int = 0:
+	set(value):
+		var old_value = total_population
+		total_population = max(0, value)
+		if old_value != total_population:
+			population_changed.emit.call_deferred(total_population)
 
 var inventory: Dictionary = {
 	"Carrots": 0,
@@ -74,6 +82,31 @@ func request_workers(amount: int) -> int:
 
 func return_workers(amount: int):
 	available_workforce += amount
+
+func add_population(amount: int):
+	total_population += amount
+	available_workforce += amount
+
+func remove_population(amount: int):
+	total_population -= amount
+	available_workforce -= amount
+
+	if available_workforce < 0:
+		var deficit = -available_workforce
+		if game_node:
+			var buildings = game_node.buildings_parent.get_children()
+			for building in buildings:
+				if deficit <= 0:
+					break
+				if building.has_method("remove_workers"):
+					var removed = building.remove_workers(deficit)
+					if removed > 0:
+						deficit -= removed
+						available_workforce += removed
+
+		# If still negative despite all efforts, just clip it to 0
+		if available_workforce < 0:
+			available_workforce = 0
 
 func add_goods(goods_id: String, amount: int):
 	if inventory.has(goods_id):

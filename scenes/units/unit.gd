@@ -24,7 +24,7 @@ var food_texture = preload("res://img/goods/food.png")
 @onready var animation_player: AnimatedSprite3D = $AnimatedSprite3D
 @onready var timeout_timer: Timer = $TimeoutTimer
 
-func setup(p_spawner: Node3D, p_warehouse: Node3D, p_goods_type: String, p_amount: int, p_timeout: float = 60.0):
+func setup(p_spawner: Node3D, p_warehouse: Node3D, p_goods_type: String, p_amount: int, p_timeout: float = 300.0):
 	spawner = p_spawner
 	warehouse = p_warehouse
 	goods_type = p_goods_type
@@ -48,7 +48,7 @@ func setup(p_spawner: Node3D, p_warehouse: Node3D, p_goods_type: String, p_amoun
 		print("Unit: Global.game_node is null!")
 		call_deferred("_fail", "Global.game_node is null")
 
-func setup_fetch(p_spawner: Node3D, p_warehouse: Node3D, p_goods_type: String, p_amount: int, p_timeout: float = 60.0):
+func setup_fetch(p_spawner: Node3D, p_warehouse: Node3D, p_goods_type: String, p_amount: int, p_timeout: float = 300.0):
 	is_fetching = true
 	spawner = p_spawner
 	warehouse = p_warehouse

@@ -167,6 +167,13 @@ func on_state_changed():
 			animation_player.play("producing")
 			start_production()
 
+func remove_workers(amount: int) -> int:
+	var to_remove = min(amount, current_workers)
+	if to_remove > 0:
+		current_workers -= to_remove
+		update_state()
+	return to_remove
+
 func start_production():
 	if current_workers > 0 and (not consumes_goods or stored_input_goods >= items_per_production):
 		var scale = float(current_workers) / float(max_workers)
