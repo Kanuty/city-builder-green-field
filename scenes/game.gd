@@ -20,6 +20,7 @@ var pottery_house_scene = preload("res://scenes/buildings/pottery_house.tscn")
 var warehouse_scene = preload("res://scenes/buildings/warehouse.tscn")
 var cooking_den_scene = preload("res://scenes/buildings/cooking_den.tscn")
 var house_scene = preload("res://scenes/buildings/house.tscn")
+var building_popup_scene = preload("res://scenes/ui/building_popup.tscn")
 
 func _ready():
 	Global.game_node = self
@@ -71,6 +72,10 @@ func _unhandled_input(event):
 				$UI/BuildUI.untoggle_destroy_button()
 		elif event.is_action_pressed("ui_cancel"):
 			$UI/BuildUI.untoggle_destroy_button()
+	else:
+		if event is InputEventMouseButton:
+			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+				try_show_building_info()
 
 func handle_camera_movement(delta):
 	var viewport_size = get_viewport().get_visible_rect().size
@@ -260,6 +265,23 @@ func destroy_building(building):
 
 	update_navigation_for_building(grid_pos, size, false)
 	building.queue_free()
+
+func try_show_building_info():
+	var world_pos = get_mouse_world_pos()
+	var grid_pos = world_to_grid(world_pos)
+
+	if occupied_tiles.has(grid_pos):
+		var building = occupied_tiles[grid_pos]
+		show_building_info(building)
+
+func show_building_info(building: Node3D):
+	if get_tree().paused:
+		return
+
+	var popup = building_popup_scene.instantiate()
+	$UI.add_child(popup)
+	popup.setup(building)
+	get_tree().paused = true
 
 func cancel_build_mode():
 	current_building_type = ""

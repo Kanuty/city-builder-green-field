@@ -228,10 +228,10 @@ func _on_unit_delivery_finished(amount_delivered: int):
 	update_state()
 	print(building_name, " unit delivery finished. Amount: ", amount_delivered)
 
-func _on_unit_delivery_failed():
+func _on_unit_delivery_failed(reason: String = "Unknown reason"):
 	current_spawned_units -= 1
 	update_state()
-	print(building_name, " unit delivery failed.")
+	print(building_name, " unit delivery failed. Reason: ", reason)
 
 func receive_returned_goods(amount: int):
 	stored_goods = min(max_capacity, stored_goods + amount)
