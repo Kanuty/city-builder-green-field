@@ -12,14 +12,20 @@ var max_view_range: Vector2 = Vector2(40.0, 40.0)
 var current_building_type: String = ""
 var occupied_tiles: Dictionary = {} # Vector2i -> Node3D
 var farm_scene = preload("res://scenes/buildings/farm.tscn")
+var magasine_scene = preload("res://scenes/buildings/magasine.tscn")
 
 func _ready():
 	# Register existing buildings
 	for building in buildings_parent.get_children():
-		var pos = world_to_grid(building.global_position)
-		occupied_tiles[pos] = building
+		var size = building.get("grid_size") if "grid_size" in building else Vector2i(1, 1)
+		var grid_pos = world_to_grid(building.global_position - Vector3(size.x / 2.0, 0, size.y / 2.0))
+
 		# Ensure they are snapped to grid
-		building.global_position = grid_to_world(pos)
+		building.global_position = grid_to_world_sized(grid_pos, size)
+
+		for x in range(size.x):
+			for y in range(size.y):
+				occupied_tiles[grid_pos + Vector2i(x, y)] = building
 
 	placement_preview.visible = false
 
@@ -64,7 +70,10 @@ func world_to_grid(world_pos: Vector3) -> Vector2i:
 	return Vector2i(floor(world_pos.x), floor(world_pos.z))
 
 func grid_to_world(grid_pos: Vector2i) -> Vector3:
-	return Vector3(grid_pos.x + 0.5, 0, grid_pos.y + 0.5)
+	return grid_to_world_sized(grid_pos, Vector2i(1, 1))
+
+func grid_to_world_sized(grid_pos: Vector2i, size: Vector2i) -> Vector3:
+	return Vector3(grid_pos.x + size.x / 2.0, 0, grid_pos.y + size.y / 2.0)
 
 func get_mouse_world_pos() -> Vector3:
 	var mouse_pos = get_viewport().get_mouse_position()
@@ -81,13 +90,15 @@ func get_mouse_world_pos() -> Vector3:
 
 func update_placement_preview():
 	var world_pos = get_mouse_world_pos()
-	var grid_pos = world_to_grid(world_pos)
+	var size = get_current_building_size()
+	var grid_pos = world_to_grid(world_pos - Vector3(size.x / 2.0, 0, size.y / 2.0) + Vector3(0.5, 0, 0.5))
 
 	# Clamp to map bounds
-	grid_pos.x = clamp(grid_pos.x, -int(map_size.x/2), int(map_size.x/2)-1)
-	grid_pos.y = clamp(grid_pos.y, -int(map_size.y/2), int(map_size.y/2)-1)
+	grid_pos.x = clamp(grid_pos.x, -int(map_size.x/2), int(map_size.x/2) - size.x)
+	grid_pos.y = clamp(grid_pos.y, -int(map_size.y/2), int(map_size.y/2) - size.y)
 
-	placement_preview.global_position = grid_to_world(grid_pos)
+	placement_preview.scale = Vector3(size.x, 1, size.y)
+	placement_preview.global_position = grid_to_world_sized(grid_pos, size)
 	placement_preview.visible = true
 
 	var mat = placement_preview.get_surface_override_material(0)
@@ -96,7 +107,7 @@ func update_placement_preview():
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		placement_preview.set_surface_override_material(0, mat)
 
-	if is_tile_free(grid_pos):
+	if is_area_free(grid_pos, size):
 		mat.albedo_color = Color(0, 0, 1, 0.5) # Blue
 	else:
 		mat.albedo_color = Color(1, 0, 0, 0.5) # Red
@@ -104,27 +115,48 @@ func update_placement_preview():
 func is_tile_free(grid_pos: Vector2i) -> bool:
 	return not occupied_tiles.has(grid_pos)
 
+func is_area_free(grid_pos: Vector2i, size: Vector2i) -> bool:
+	for x in range(size.x):
+		for y in range(size.y):
+			if occupied_tiles.has(grid_pos + Vector2i(x, y)):
+				return false
+	return true
+
+func get_current_building_size() -> Vector2i:
+	if current_building_type == "Farm":
+		return Vector2i(1, 1)
+	elif current_building_type == "Magasine":
+		return Vector2i(2, 2)
+	return Vector2i(1, 1)
+
 func try_place_building():
 	var world_pos = get_mouse_world_pos()
-	var grid_pos = world_to_grid(world_pos)
+	var size = get_current_building_size()
+	var grid_pos = world_to_grid(world_pos - Vector3(size.x / 2.0, 0, size.y / 2.0) + Vector3(0.5, 0, 0.5))
 
 	# Final check of bounds to be sure
-	if grid_pos.x < -int(map_size.x/2) or grid_pos.x >= int(map_size.x/2) or \
-	   grid_pos.y < -int(map_size.y/2) or grid_pos.y >= int(map_size.y/2):
+	if grid_pos.x < -int(map_size.x/2) or grid_pos.x > int(map_size.x/2) - size.x or \
+	   grid_pos.y < -int(map_size.y/2) or grid_pos.y > int(map_size.y/2) - size.y:
 		return
 
-	if is_tile_free(grid_pos):
+	if is_area_free(grid_pos, size):
 		place_building(grid_pos)
 
 func place_building(grid_pos: Vector2i):
 	var new_building
 	if current_building_type == "Farm":
 		new_building = farm_scene.instantiate()
+	elif current_building_type == "Magasine":
+		new_building = magasine_scene.instantiate()
 
 	if new_building:
+		var size = new_building.get("grid_size") if "grid_size" in new_building else Vector2i(1, 1)
 		buildings_parent.add_child(new_building)
-		new_building.global_position = grid_to_world(grid_pos)
-		occupied_tiles[grid_pos] = new_building
+		new_building.global_position = grid_to_world_sized(grid_pos, size)
+
+		for x in range(size.x):
+			for y in range(size.y):
+				occupied_tiles[grid_pos + Vector2i(x, y)] = new_building
 		# Optionally exit build mode or stay for multiple placements
 		# Let's stay in build mode for now as per "user selection" then "can build"
 

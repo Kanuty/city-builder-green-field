@@ -33,4 +33,14 @@ animation = &"idle"
 [node name="ProductionTimer" type="Timer" parent="."]
 one_shot = true
 
+[node name="DeliveryTimer" type="Timer" parent="."]
+wait_time = 10.0
+one_shot = true
+
+[node name="TimeoutTimer" type="Timer" parent="."]
+wait_time = 60.0
+one_shot = true
+
 [connection signal="timeout" from="ProductionTimer" to="." method="_on_production_timer_timeout"]
+[connection signal="timeout" from="DeliveryTimer" to="." method="_on_delivery_timer_timeout"]
+[connection signal="timeout" from="TimeoutTimer" to="." method="_on_timeout_timer_timeout"]

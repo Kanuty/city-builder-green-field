@@ -2,6 +2,7 @@ extends Node
 
 signal workforce_changed(new_value)
 signal goods_updated(goods_id, new_value)
+signal magazine_registered()
 
 const PRODUCIBLE_GOODS = {
 	"Carrots": {
@@ -18,6 +19,29 @@ var available_workforce: int = 100:
 var inventory: Dictionary = {
 	"Carrots": 0
 }
+
+var magazines: Array = []
+
+func register_magazine(magazine):
+	if not magazines.has(magazine):
+		magazines.append(magazine)
+		magazine_registered.emit()
+
+func unregister_magazine(magazine):
+	magazines.erase(magazine)
+
+func find_nearest_magazine(position: Vector3) -> Node:
+	var nearest_mag = null
+	var min_dist = INF
+
+	for mag in magazines:
+		if mag.get_available_space() > 0:
+			var dist = position.distance_to(mag.global_position)
+			if dist < min_dist:
+				min_dist = dist
+				nearest_mag = mag
+
+	return nearest_mag
 
 func request_workers(amount: int) -> int:
 	var granted = min(amount, available_workforce)
