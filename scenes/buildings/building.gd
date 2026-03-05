@@ -14,8 +14,13 @@ var current_workers: int = 0
 var stored_goods: int = 0
 var current_production_progress: float = 0.0
 
+var current_magazine_reservation: Node = null
+var amount_reserved: int = 0
+
 @onready var animation_player: AnimatedSprite3D = $AnimatedSprite3D
 @onready var production_timer: Timer = $ProductionTimer
+@onready var delivery_timer: Timer = $DeliveryTimer
+@onready var timeout_timer: Timer = $TimeoutTimer
 
 func _ready():
 	if not Global.PRODUCIBLE_GOODS.has(goods_type):
@@ -24,10 +29,15 @@ func _ready():
 		assert(Global.PRODUCIBLE_GOODS.has(goods_type), error_message)
 		return
 
+	Global.magazine_registered.connect(_on_magazine_registered)
 	update_state()
 	# Try to get workers from global workforce
 	current_workers = Global.request_workers(max_workers)
 	update_state()
+
+func _on_magazine_registered():
+	if current_state == State.IDLE and stored_goods > 0:
+		try_send_to_magazine()
 
 func update_state():
 	var old_state = current_state
@@ -36,6 +46,7 @@ func update_state():
 		current_state = State.NO_WORKERS
 	elif stored_goods >= max_capacity:
 		current_state = State.IDLE
+		try_send_to_magazine()
 	else:
 		current_state = State.PRODUCING
 
@@ -64,11 +75,49 @@ func _on_production_timer_timeout():
 	if stored_goods < max_capacity:
 		stored_goods += 1
 		print(building_name, " produced ", goods_type, ". Total: ", stored_goods)
-		Global.add_goods(goods_type, 1)
 
 	update_state()
 	if current_state == State.PRODUCING:
 		start_production()
 
+func try_send_to_magazine():
+	if current_magazine_reservation != null or stored_goods == 0:
+		return
+
+	var magazine = Global.find_nearest_magazine(global_position)
+	if magazine:
+		var available = magazine.get_available_space()
+		var amount_to_send = min(stored_goods, available)
+
+		if amount_to_send > 0:
+			if magazine.reserve(amount_to_send):
+				current_magazine_reservation = magazine
+				amount_reserved = amount_to_send
+				delivery_timer.start()
+				timeout_timer.start()
+				print(building_name, " started delivery of ", amount_to_send, " to ", magazine.building_name)
+
+func _on_delivery_timer_timeout():
+	if is_instance_valid(current_magazine_reservation):
+		current_magazine_reservation.receive_delivery(amount_reserved, goods_type)
+		stored_goods -= amount_reserved
+		timeout_timer.stop()
+		print(building_name, " delivered ", amount_reserved, " to magasine.")
+
+	current_magazine_reservation = null
+	amount_reserved = 0
+	update_state()
+
+func _on_timeout_timer_timeout():
+	if is_instance_valid(current_magazine_reservation):
+		print(building_name, " delivery timed out!")
+		current_magazine_reservation.cancel_reservation(amount_reserved)
+
+	current_magazine_reservation = null
+	amount_reserved = 0
+	delivery_timer.stop()
+
 func _exit_tree():
+	if is_instance_valid(current_magazine_reservation):
+		current_magazine_reservation.cancel_reservation(amount_reserved)
 	Global.return_workers(current_workers)
