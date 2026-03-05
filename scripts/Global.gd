@@ -2,7 +2,7 @@ extends Node
 
 signal workforce_changed(new_value)
 signal goods_updated(goods_id, new_value)
-signal magazine_registered()
+signal warehouse_registered()
 
 var game_node: Node3D
 
@@ -29,21 +29,21 @@ var inventory: Dictionary = {
 	"Potato": 0
 }
 
-var magazines: Array = []
+var warehouses: Array = []
 
-func register_magazine(magazine):
-	if not magazines.has(magazine):
-		magazines.append(magazine)
-		magazine_registered.emit()
+func register_warehouse(warehouse):
+	if not warehouses.has(warehouse):
+		warehouses.append(warehouse)
+		warehouse_registered.emit()
 
-func unregister_magazine(magazine):
-	magazines.erase(magazine)
+func unregister_warehouse(warehouse):
+	warehouses.erase(warehouse)
 
-func find_nearest_magazine(position: Vector3) -> Node:
+func find_nearest_warehouse(position: Vector3) -> Node:
 	var nearest_mag = null
 	var min_dist = INF
 
-	for mag in magazines:
+	for mag in warehouses:
 		if mag.get_available_space() > 0:
 			var dist = position.distance_to(mag.global_position)
 			if dist < min_dist:

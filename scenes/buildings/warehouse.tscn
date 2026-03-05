@@ -1,9 +1,9 @@
 [gd_scene load_steps=4 format=3 uid="uid://d8x4j5k6l7m8p"]
 
-[ext_resource type="Script" path="res://scenes/buildings/magasine.gd" id="1_magasine_script"]
+[ext_resource type="Script" path="res://scenes/buildings/warehouse.gd" id="1_warehouse_script"]
 [ext_resource type="Texture2D" uid="uid://s53c1rbmrkuo" path="res://icon.svg" id="2_icon"]
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_magasine"]
+[sub_resource type="SpriteFrames" id="SpriteFrames_warehouse"]
 animations = [{
 "frames": [{
 "duration": 1.0,
@@ -14,12 +14,12 @@ animations = [{
 "speed": 5.0
 }]
 
-[node name="Magasine" type="Node3D"]
-script = ExtResource("1_magasine_script")
+[node name="Warehouse" type="Node3D"]
+script = ExtResource("1_warehouse_script")
 
 [node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0.01, 0)
 axis = 1
 pixel_size = 0.0078125
-sprite_frames = SubResource("SpriteFrames_magasine")
+sprite_frames = SubResource("SpriteFrames_warehouse")
 animation = &"idle"
