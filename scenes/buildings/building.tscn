@@ -1,0 +1,34 @@
+[gd_scene load_steps=3 format=3 uid="uid://b8y4j5k6l7m8p"]
+
+[ext_resource type="Script" path="res://scenes/buildings/building.gd" id="1_script"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_1"]
+animations = [{
+"frames": [],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"no_workers",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"producing",
+"speed": 5.0
+}]
+
+[node name="Building" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+sprite_frames = SubResource("SpriteFrames_1")
+animation = &"idle"
+
+[node name="ProductionTimer" type="Timer" parent="."]
+one_shot = true
+
+[connection signal="timeout" from="ProductionTimer" to="." method="_on_production_timer_timeout"]

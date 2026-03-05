@@ -1,4 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://c8x4j5k6l7m8n"]
+[gd_scene load_steps=7 format=3 uid="uid://c8x4j5k6l7m8n"]
+
+[ext_resource type="PackedScene" uid="uid://d8y4j5k6l7m8q" path="res://scenes/workforce_ui.tscn" id="1_ui"]
+[ext_resource type="PackedScene" uid="uid://b8y4j5k6l7m8p" path="res://scenes/buildings/building.tscn" id="2_building"]
 
 [sub_resource type="Shader" id="Shader_1"]
 code = "shader_type spatial;
@@ -40,3 +43,14 @@ size = 10.0
 
 [node name="Grid" type="MeshInstance3D" parent="."]
 mesh = SubResource("PlaneMesh_1")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="WorkforceUI" parent="UI" instance=ExtResource("1_ui")]
+
+[node name="Buildings" type="Node3D" parent="."]
+
+[node name="SampleBuilding" parent="Buildings" instance=ExtResource("2_building")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+building_name = "Sawmill"
+goods_type = "Wood"
