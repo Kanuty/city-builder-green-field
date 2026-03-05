@@ -40,7 +40,7 @@ var potato_texture = preload("res://img/goods/potato.png")
 var carrots_texture = preload("res://img/goods/carrots_01.png")
 var clay_texture = preload("res://img/clay/clay.png")
 var pottery_texture = preload("res://img/clay/pottery.png")
-
+var food_texture = preload("res://img/goods/food.png")
 
 func _ready():
 	if not Global.PRODUCIBLE_GOODS.has(goods_type):
@@ -114,14 +114,21 @@ func _update_visuals():
 		sprite.pixel_size = 0.001
 		sprite.render_priority = 1
 		sprite.position = Vector3(-0.3, 0.05 * i, 0)
-		if input_goods_type == "Carrots":
+
+		var type_to_render = input_goods_type
+		if stored_input_goods_types.size() > i:
+			type_to_render = stored_input_goods_types[i]
+
+		if type_to_render == "Carrots":
 			sprite.texture = carrots_texture
-		elif input_goods_type == "Potato":
+		elif type_to_render == "Potato":
 			sprite.texture = potato_texture
-		elif input_goods_type == "Clay":
+		elif type_to_render == "Clay":
 			sprite.texture = clay_texture
-		elif input_goods_type == "Pottery":
+		elif type_to_render == "Pottery":
 			sprite.texture = pottery_texture
+		elif type_to_render == "Food":
+			sprite.texture = food_texture
 		else:
 			sprite.texture = potato_texture
 		add_child(sprite)
@@ -141,6 +148,8 @@ func _update_visuals():
 			sprite.texture = clay_texture
 		elif goods_type == "Pottery":
 			sprite.texture = pottery_texture
+		elif goods_type == "Food":
+			sprite.texture = food_texture
 		else:
 			sprite.texture = potato_texture
 		add_child(sprite)

@@ -19,7 +19,7 @@ var potato_texture = preload("res://img/goods/potato.png")
 var carrots_texture = preload("res://img/goods/carrots_01.png")
 var clay_texture = preload("res://img/clay/clay.png")
 var pottery_texture = preload("res://img/clay/pottery.png")
-var food_texture = preload("res://img/food/food.png")
+var food_texture = preload("res://img/goods/food.png")
 
 @onready var animation_player: AnimatedSprite3D = $AnimatedSprite3D
 @onready var timeout_timer: Timer = $TimeoutTimer

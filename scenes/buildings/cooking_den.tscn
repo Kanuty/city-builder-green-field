@@ -41,7 +41,7 @@ unit_type = ExtResource("1_unit")
 consumes_goods = true
 input_goods_type = "Potato"
 secondary_input_goods_type = "Carrots"
-items_per_production = 2
+items_per_production = 1
 
 [node name="AnimatedSprite3D" parent="." index="0"]
 sprite_frames = SubResource("SpriteFrames_farm")
