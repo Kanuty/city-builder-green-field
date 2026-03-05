@@ -10,7 +10,10 @@ var max_pottery_capacity: int = 10
 var stored_food: int = 0
 var stored_pottery: int = 0
 
-var house_level: int = 1
+var house_level: int = 0
+
+var current_population: int = 0
+var reserved_population: int = 0
 
 @onready var sprite: AnimatedSprite3D = $AnimatedSprite3D
 @onready var consume_timer: Timer = $ConsumeTimer
@@ -92,6 +95,37 @@ func _on_consume_timer_timeout():
 
 	update_level()
 
+func get_max_population(level: int) -> int:
+	if level == 0:
+		return 0
+	elif level == 1:
+		return 5
+	elif level == 2:
+		return 11
+	elif level == 3:
+		return 17
+	elif level == 4:
+		return 25
+	return 0
+
+func get_available_space() -> int:
+	return get_max_population(house_level) - current_population - reserved_population
+
+func reserve_pop():
+	reserved_population += 1
+
+func cancel_reserve_pop():
+	reserved_population = max(0, reserved_population - 1)
+
+func add_pop():
+	reserved_population = max(0, reserved_population - 1)
+	current_population += 1
+	Global.add_population(1)
+
+func _exit_tree():
+	if current_population > 0:
+		Global.remove_population(current_population)
+
 func update_level():
 	var old_level = house_level
 
@@ -104,6 +138,15 @@ func update_level():
 
 	if old_level != house_level:
 		update_visuals()
+
+	var new_max = get_max_population(house_level)
+	if current_population > new_max:
+		var excess = current_population - new_max
+		current_population = new_max
+		Global.remove_population(excess)
+		if Global.game_node:
+			for i in range(excess):
+				Global.game_node.spawn_returning_pop(global_position)
 
 func update_visuals():
 	if house_level == 0:

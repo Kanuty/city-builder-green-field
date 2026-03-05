@@ -21,6 +21,10 @@ var warehouse_scene = preload("res://scenes/buildings/warehouse.tscn")
 var cooking_den_scene = preload("res://scenes/buildings/cooking_den.tscn")
 var house_scene = preload("res://scenes/buildings/house.tscn")
 var building_popup_scene = preload("res://scenes/ui/building_popup.tscn")
+var pop_scene = preload("res://scenes/units/pop.tscn")
+
+var spawner_pos: Vector3 = Vector3(-10, 0, -10)
+var pop_spawn_timer: Timer
 
 func _ready():
 	Global.game_node = self
@@ -32,6 +36,23 @@ func _ready():
 	navigation_grid.region = Rect2i(-int(map_size.x/2), -int(map_size.y/2), int(map_size.x), int(map_size.y))
 	navigation_grid.cell_size = Vector2(1, 1)
 	navigation_grid.update()
+
+	# Set up Spawner
+	var spawner_mesh = MeshInstance3D.new()
+	var box = BoxMesh.new()
+	box.size = Vector3(1, 1, 1)
+	spawner_mesh.mesh = box
+	var mat = StandardMaterial3D.new()
+	mat.albedo_color = Color(1, 0, 0) # Red
+	spawner_mesh.material_override = mat
+	add_child(spawner_mesh)
+	spawner_mesh.global_position = spawner_pos
+
+	pop_spawn_timer = Timer.new()
+	pop_spawn_timer.wait_time = 2.0
+	pop_spawn_timer.autostart = true
+	pop_spawn_timer.timeout.connect(_on_pop_spawn_timer_timeout)
+	add_child(pop_spawn_timer)
 
 	# Register existing buildings
 	for building in buildings_parent.get_children():
@@ -273,6 +294,34 @@ func try_show_building_info():
 	if occupied_tiles.has(grid_pos):
 		var building = occupied_tiles[grid_pos]
 		show_building_info(building)
+
+func _on_pop_spawn_timer_timeout():
+	var valid_houses = []
+	for tile_pos in occupied_tiles:
+		var building = occupied_tiles[tile_pos]
+		if is_instance_valid(building) and building.building_name == "House":
+			if building.get_available_space() > 0:
+				if not valid_houses.has(building):
+					valid_houses.append(building)
+
+	if valid_houses.size() > 0:
+		var target_house = valid_houses[randi() % valid_houses.size()]
+		target_house.reserve_pop()
+		spawn_pop(target_house)
+
+func spawn_pop(target_house: Node3D):
+	if pop_scene:
+		var pop = pop_scene.instantiate()
+		add_child(pop)
+		pop.global_position = spawner_pos
+		pop.setup(target_house, spawner_pos, false)
+
+func spawn_returning_pop(start_pos: Vector3):
+	if pop_scene:
+		var pop = pop_scene.instantiate()
+		add_child(pop)
+		pop.global_position = start_pos
+		pop.setup(null, spawner_pos, true)
 
 func show_building_info(building: Node3D):
 	if get_tree().paused:

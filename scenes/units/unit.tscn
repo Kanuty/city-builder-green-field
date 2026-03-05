@@ -68,7 +68,7 @@ render_priority = 1
 texture = ExtResource("2_icon")
 
 [node name="TimeoutTimer" type="Timer" parent="."]
-wait_time = 60.0
+wait_time = 300.0
 one_shot = true
 
 [connection signal="timeout" from="TimeoutTimer" to="." method="_on_timeout_timer_timeout"]
