@@ -49,7 +49,7 @@ func _on_workforce_changed(_new_workforce_total: int):
 		update_state()
 
 func _on_magazine_registered():
-	if current_state == State.IDLE and stored_goods > 0:
+	if  stored_goods > 0:
 		try_send_to_magazine()
 
 func update_state():

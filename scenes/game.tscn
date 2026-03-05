@@ -1,9 +1,15 @@
-[gd_scene load_steps=11 format=3 uid="uid://c8x4j5k6l7m8n"]
+[gd_scene format=3 uid="uid://c8x4j5k6l7m8n"]
 
-[ext_resource type="Script" path="res://scenes/game.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://d8y4j5k6l7m8q" path="res://scenes/workforce_ui.tscn" id="2_ui"]
-[ext_resource type="PackedScene" uid="uid://c8x4j5k6l7m8p" path="res://scenes/buildings/farm.tscn" id="3_farm"]
-[ext_resource type="PackedScene" uid="uid://d9y4j5k6l7m8r" path="res://scenes/build_ui.tscn" id="4_buildui"]
+[ext_resource type="Script" uid="uid://bbb0mifagmll6" path="res://scenes/game.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://ek8x3nw10rhy" path="res://scenes/workforce_ui.tscn" id="2_ui"]
+[ext_resource type="PackedScene" uid="uid://c8x4j5k6l7m8p" path="res://scenes/buildings/carrot_farm.tscn" id="3_farm"]
+[ext_resource type="PackedScene" uid="uid://fk8x3nw10rh0" path="res://scenes/build_ui.tscn" id="4_buildui"]
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.1, 0.1, 0.1, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.5, 0.5, 0.5, 1)
 
 [sub_resource type="Shader" id="Shader_1"]
 code = "shader_type spatial;
@@ -22,12 +28,6 @@ shader = SubResource("Shader_1")
 material = SubResource("ShaderMaterial_1")
 size = Vector2(20, 20)
 
-[sub_resource type="Environment" id="Environment_1"]
-background_mode = 1
-background_color = Color(0.1, 0.1, 0.1, 1)
-ambient_light_source = 2
-ambient_light_color = Color(0.5, 0.5, 0.5, 1)
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
 transparency = 1
 albedo_color = Color(0, 0, 1, 0.5)
@@ -36,39 +36,37 @@ albedo_color = Color(0, 0, 1, 0.5)
 material = SubResource("StandardMaterial3D_1")
 size = Vector2(1, 1)
 
-[node name="Game" type="Node3D"]
+[node name="Game" type="Node3D" unique_id=1197098540]
 script = ExtResource("1_script")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=630002618]
 environment = SubResource("Environment_1")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1314951440]
 transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 10, 10, 10)
 shadow_enabled = true
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1346115671]
 transform = Transform3D(0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, 10, 8.165, 10)
 projection = 1
 current = true
 size = 10.0
 
-[node name="Grid" type="MeshInstance3D" parent="."]
+[node name="Grid" type="MeshInstance3D" parent="." unique_id=194493596]
 mesh = SubResource("PlaneMesh_1")
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=572649481]
 
-[node name="WorkforceUI" parent="UI" instance=ExtResource("2_ui")]
+[node name="WorkforceUI" parent="UI" unique_id=492875754 instance=ExtResource("2_ui")]
 
-[node name="BuildUI" parent="UI" instance=ExtResource("4_buildui")]
+[node name="BuildUI" parent="UI" unique_id=419860455 instance=ExtResource("4_buildui")]
 
-[node name="Buildings" type="Node3D" parent="."]
+[node name="Buildings" type="Node3D" parent="." unique_id=37950396]
 
-[node name="Farm" parent="Buildings" instance=ExtResource("3_farm")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+[node name="Farm" parent="Buildings" unique_id=1646148540 instance=ExtResource("3_farm")]
 building_name = "Farm"
-goods_type = "Carrots"
 
-[node name="PlacementPreview" type="MeshInstance3D" parent="."]
+[node name="PlacementPreview" type="MeshInstance3D" parent="." unique_id=1539041678]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
 mesh = SubResource("PlaneMesh_preview")
 
