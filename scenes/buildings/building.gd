@@ -37,7 +37,16 @@ func _ready():
 	update_state()
 	# Try to get workers from global workforce
 	current_workers = Global.request_workers(max_workers)
+	if not Global.workforce_changed.is_connected(_on_workforce_changed):
+		Global.workforce_changed.connect(_on_workforce_changed)
 	update_state()
+
+func _on_workforce_changed(_new_workforce_total: int):
+	if current_workers < max_workers and Global.available_workforce > 0:
+		var needed = max_workers - current_workers
+		var granted = Global.request_workers(needed)
+		current_workers += granted
+		update_state()
 
 func _on_magazine_registered():
 	if current_state == State.IDLE and stored_goods > 0:
