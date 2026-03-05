@@ -1,7 +1,8 @@
 [gd_scene load_steps=7 format=3 uid="uid://c8x4j5k6l7m8n"]
 
-[ext_resource type="PackedScene" uid="uid://d8y4j5k6l7m8q" path="res://scenes/workforce_ui.tscn" id="1_ui"]
-[ext_resource type="PackedScene" uid="uid://b8y4j5k6l7m8p" path="res://scenes/buildings/building.tscn" id="2_building"]
+[ext_resource type="Script" path="res://scenes/game.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://d8y4j5k6l7m8q" path="res://scenes/workforce_ui.tscn" id="2_ui"]
+[ext_resource type="PackedScene" uid="uid://c8x4j5k6l7m8p" path="res://scenes/buildings/farm.tscn" id="3_farm"]
 
 [sub_resource type="Shader" id="Shader_1"]
 code = "shader_type spatial;
@@ -27,6 +28,7 @@ ambient_light_source = 2
 ambient_light_color = Color(0.5, 0.5, 0.5, 1)
 
 [node name="Game" type="Node3D"]
+script = ExtResource("1_script")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1")
@@ -46,11 +48,11 @@ mesh = SubResource("PlaneMesh_1")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
-[node name="WorkforceUI" parent="UI" instance=ExtResource("1_ui")]
+[node name="WorkforceUI" parent="UI" instance=ExtResource("2_ui")]
 
 [node name="Buildings" type="Node3D" parent="."]
 
-[node name="SampleBuilding" parent="Buildings" instance=ExtResource("2_building")]
+[node name="Farm" parent="Buildings" instance=ExtResource("3_farm")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-building_name = "Sawmill"
-goods_type = "Wood"
+building_name = "Farm"
+goods_type = "Carrots"
