@@ -114,10 +114,18 @@ func start_return_to_spawner():
 		_fail()
 
 func _update_visuals():
+	var tex = null
+	if goods_type == "Carrots":
+		tex = load("res://img/goods/carrots_01.png")
+	elif goods_type == "Potato":
+		tex = load("res://img/goods/potato.png")
+
 	for i in range(4):
 		var item_node = get_node_or_null("Items/Item" + str(i + 1))
 		if item_node:
 			item_node.visible = i < amount
+			if tex:
+				item_node.texture = tex
 
 func _fail():
 	if not returning and is_instance_valid(warehouse):
