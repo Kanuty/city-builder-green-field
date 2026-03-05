@@ -18,6 +18,12 @@ var current_production_progress: float = 0.0
 @onready var production_timer: Timer = $ProductionTimer
 
 func _ready():
+	if not Global.PRODUCIBLE_GOODS.has(goods_type):
+		var error_message = "Building error: %s tried to produce invalid goods type '%s'." % [building_name, goods_type]
+		push_error(error_message)
+		assert(Global.PRODUCIBLE_GOODS.has(goods_type), error_message)
+		return
+
 	update_state()
 	# Try to get workers from global workforce
 	current_workers = Global.request_workers(max_workers)
@@ -58,8 +64,7 @@ func _on_production_timer_timeout():
 	if stored_goods < max_capacity:
 		stored_goods += 1
 		print(building_name, " produced ", goods_type, ". Total: ", stored_goods)
-		if goods_type == "Carrots":
-			Global.add_carrots(1)
+		Global.add_goods(goods_type, 1)
 
 	update_state()
 	if current_state == State.PRODUCING:
