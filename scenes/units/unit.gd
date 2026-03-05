@@ -91,7 +91,7 @@ func _process(delta):
 
 		start_return_to_spawner()
 
-	if returning and amount > 0:
+	if returning and amount > 0 and not is_fetching:
 		# If we are returning to spawner with goods, check if a new warehouse became available
 		var new_warehouse = Global.find_nearest_warehouse(global_position)
 		if new_warehouse:
