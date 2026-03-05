@@ -17,7 +17,7 @@ var current_workers: int = 0
 var stored_goods: int = 0
 var current_production_progress: float = 0.0
 
-var current_magazine_reservation: Node = null
+var current_warehouse_reservation: Node = null
 var amount_reserved: int = 0
 var current_spawned_units: int = 0
 
@@ -33,7 +33,7 @@ func _ready():
 		assert(Global.PRODUCIBLE_GOODS.has(goods_type), error_message)
 		return
 
-	Global.magazine_registered.connect(_on_magazine_registered)
+	Global.warehouse_registered.connect(_on_warehouse_registered)
 	update_state()
 	# Try to get workers from global workforce
 	current_workers = Global.request_workers(max_workers)
@@ -48,13 +48,13 @@ func _on_workforce_changed(_new_workforce_total: int):
 		current_workers += granted
 		update_state()
 
-func _on_magazine_registered():
+func _on_warehouse_registered():
 	if  stored_goods > 0:
-		try_send_to_magazine()
+		try_send_to_warehouse()
 
 func update_state():
 	if stored_goods >= 4 or stored_goods >= max_capacity:
-		try_send_to_magazine()
+		try_send_to_warehouse()
 	var old_state = current_state
 
 	if current_workers == 0:
@@ -94,22 +94,22 @@ func _on_production_timer_timeout():
 	if current_state == State.PRODUCING:
 		start_production()
 
-func try_send_to_magazine():
-	if current_magazine_reservation != null or stored_goods == 0:
+func try_send_to_warehouse():
+	if current_warehouse_reservation != null or stored_goods == 0:
 		return
 
 	# Only send if we have at least 4 items, OR if we are at max capacity
 	if stored_goods < 4 and stored_goods < max_capacity:
 		return
 
-	var magazine = Global.find_nearest_magazine(global_position)
-	if magazine:
-		var available = magazine.get_available_space()
+	var warehouse = Global.find_nearest_warehouse(global_position)
+	if warehouse:
+		var available = warehouse.get_available_space()
 		# Cannot send more than 4 items per transport
 		var amount_to_send = min(stored_goods, available, 4)
 
 		if amount_to_send > 0:
-			if magazine.reserve(amount_to_send):
+			if warehouse.reserve(amount_to_send):
 				if spawn_units:
 					if unit_type and current_spawned_units < max_spawned_units:
 						var unit = unit_type.instantiate()
@@ -117,20 +117,20 @@ func try_send_to_magazine():
 						unit.global_position = global_position
 						unit.delivery_finished.connect(_on_unit_delivery_finished)
 						unit.delivery_failed.connect(_on_unit_delivery_failed)
-						unit.setup(self, magazine, goods_type, amount_to_send, timeout_timer.wait_time)
+						unit.setup(self, warehouse, goods_type, amount_to_send, timeout_timer.wait_time)
 						current_spawned_units += 1
 						stored_goods -= amount_to_send # Immediately remove goods from building
 						update_state()
 						print(building_name, " spawned unit for delivery of ", amount_to_send)
 					else:
 						# If we want to spawn units but can't right now, we cancel the reservation we just made
-						magazine.cancel_reservation(amount_to_send)
+						warehouse.cancel_reservation(amount_to_send)
 				else:
-					current_magazine_reservation = magazine
+					current_warehouse_reservation = warehouse
 					amount_reserved = amount_to_send
 					delivery_timer.start()
 					timeout_timer.start()
-					print(building_name, " started delivery of ", amount_to_send, " to ", magazine.building_name)
+					print(building_name, " started delivery of ", amount_to_send, " to ", warehouse.building_name)
 
 func _on_unit_delivery_finished(amount_delivered: int):
 	current_spawned_units -= 1
@@ -147,26 +147,26 @@ func receive_returned_goods(amount: int):
 	update_state()
 
 func _on_delivery_timer_timeout():
-	if is_instance_valid(current_magazine_reservation):
-		current_magazine_reservation.receive_delivery(amount_reserved, goods_type)
+	if is_instance_valid(current_warehouse_reservation):
+		current_warehouse_reservation.receive_delivery(amount_reserved, goods_type)
 		stored_goods -= amount_reserved
 		timeout_timer.stop()
-		print(building_name, " delivered ", amount_reserved, " to magasine.")
+		print(building_name, " delivered ", amount_reserved, " to warehouse.")
 
-	current_magazine_reservation = null
+	current_warehouse_reservation = null
 	amount_reserved = 0
 	update_state()
 
 func _on_timeout_timer_timeout():
-	if is_instance_valid(current_magazine_reservation):
+	if is_instance_valid(current_warehouse_reservation):
 		print(building_name, " delivery timed out!")
-		current_magazine_reservation.cancel_reservation(amount_reserved)
+		current_warehouse_reservation.cancel_reservation(amount_reserved)
 
-	current_magazine_reservation = null
+	current_warehouse_reservation = null
 	amount_reserved = 0
 	delivery_timer.stop()
 
 func _exit_tree():
-	if is_instance_valid(current_magazine_reservation):
-		current_magazine_reservation.cancel_reservation(amount_reserved)
+	if is_instance_valid(current_warehouse_reservation):
+		current_warehouse_reservation.cancel_reservation(amount_reserved)
 	Global.return_workers(current_workers)

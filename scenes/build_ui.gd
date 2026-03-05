@@ -13,9 +13,9 @@ func _on_potato_farm_button_pressed():
 	untoggle_destroy_button()
 	building_selected.emit("Potato Farm")
 
-func _on_magasine_button_pressed():
+func _on_warehouse_button_pressed():
 	untoggle_destroy_button()
-	building_selected.emit("Magasine")
+	building_selected.emit("Warehouse")
 
 func _on_destroy_button_toggled(button_pressed: bool):
 	destruction_mode_toggled.emit(button_pressed)
