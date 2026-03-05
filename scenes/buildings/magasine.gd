@@ -11,9 +11,12 @@ var reserved_space: int = 0
 @onready var animation_player: AnimatedSprite3D = $AnimatedSprite3D
 
 func _ready():
-	Global.register_magazine(self)
+	_register_in_global.call_deferred()
 	if animation_player:
 		animation_player.play("idle")
+
+func _register_in_global():
+	Global.register_magazine(self)
 
 func _exit_tree():
 	Global.unregister_magazine(self)
