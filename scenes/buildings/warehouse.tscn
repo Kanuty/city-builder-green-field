@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://d8x4j5k6l7m8p"]
+[gd_scene format=3 uid="uid://ej8x3nw10rhx"]
 
 [ext_resource type="Script" path="res://scenes/buildings/warehouse.gd" id="1_warehouse_script"]
 [ext_resource type="Texture2D" uid="uid://s53c1rbmrkuo" path="res://icon.svg" id="2_icon"]
