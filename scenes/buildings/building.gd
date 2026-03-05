@@ -8,6 +8,9 @@ enum State { NO_WORKERS, IDLE, PRODUCING }
 @export var goods_type: String = "Goods"
 @export var max_capacity: int = 10
 @export var production_base_time: float = 5.0
+@export var spawn_units: bool = false
+@export var unit_type: PackedScene
+@export var max_spawned_units: int = 1
 
 var current_state: State = State.NO_WORKERS
 var current_workers: int = 0
@@ -16,6 +19,7 @@ var current_production_progress: float = 0.0
 
 var current_magazine_reservation: Node = null
 var amount_reserved: int = 0
+var current_spawned_units: int = 0
 
 @onready var animation_player: AnimatedSprite3D = $AnimatedSprite3D
 @onready var production_timer: Timer = $ProductionTimer
@@ -91,11 +95,37 @@ func try_send_to_magazine():
 
 		if amount_to_send > 0:
 			if magazine.reserve(amount_to_send):
-				current_magazine_reservation = magazine
-				amount_reserved = amount_to_send
-				delivery_timer.start()
-				timeout_timer.start()
-				print(building_name, " started delivery of ", amount_to_send, " to ", magazine.building_name)
+				if spawn_units:
+					if unit_type and current_spawned_units < max_spawned_units:
+						var unit = unit_type.instantiate()
+						get_parent().add_child(unit)
+						unit.global_position = global_position
+						unit.delivery_finished.connect(_on_unit_delivery_finished)
+						unit.delivery_failed.connect(_on_unit_delivery_failed)
+						unit.setup(self, magazine, goods_type, amount_to_send, timeout_timer.wait_time)
+						current_spawned_units += 1
+						stored_goods -= amount_to_send # Immediately remove goods from building
+						update_state()
+						print(building_name, " spawned unit for delivery of ", amount_to_send)
+					else:
+						# If we want to spawn units but can't right now, we cancel the reservation we just made
+						magazine.cancel_reservation(amount_to_send)
+				else:
+					current_magazine_reservation = magazine
+					amount_reserved = amount_to_send
+					delivery_timer.start()
+					timeout_timer.start()
+					print(building_name, " started delivery of ", amount_to_send, " to ", magazine.building_name)
+
+func _on_unit_delivery_finished(amount_delivered: int):
+	current_spawned_units -= 1
+	update_state()
+	print(building_name, " unit delivery finished. Amount: ", amount_delivered)
+
+func _on_unit_delivery_failed():
+	current_spawned_units -= 1
+	update_state()
+	print(building_name, " unit delivery failed.")
 
 func _on_delivery_timer_timeout():
 	if is_instance_valid(current_magazine_reservation):

@@ -4,6 +4,8 @@ signal workforce_changed(new_value)
 signal goods_updated(goods_id, new_value)
 signal magazine_registered()
 
+var game_node: Node3D
+
 const PRODUCIBLE_GOODS = {
 	"Carrots": {
 		"name": "Carrots",
