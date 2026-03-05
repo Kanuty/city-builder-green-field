@@ -70,20 +70,32 @@ func _unhandled_input(event):
 func handle_camera_movement(delta):
 	var viewport_size = get_viewport().get_visible_rect().size
 	var mouse_pos = get_viewport().get_mouse_position()
-	var movement = Vector3.ZERO
+	var move_direction = Vector3.ZERO
 
 	if mouse_pos.x < border_margin:
-		movement.x -= 1
+		move_direction.x -= 1
 	elif mouse_pos.x > viewport_size.x - border_margin:
-		movement.x += 1
+		move_direction.x += 1
 
 	if mouse_pos.y < border_margin:
-		movement.z -= 1
+		move_direction.z -= 1
 	elif mouse_pos.y > viewport_size.y - border_margin:
-		movement.z += 1
+		move_direction.z += 1
 
-	if movement != Vector3.ZERO:
-		movement = movement.normalized()
+	if move_direction != Vector3.ZERO:
+		move_direction = move_direction.normalized()
+
+		# Transform move_direction to camera space but projected on XZ plane
+		var forward = -camera.global_transform.basis.z
+		forward.y = 0
+		forward = forward.normalized()
+
+		var right = camera.global_transform.basis.x
+		right.y = 0
+		right = right.normalized()
+
+		var movement = (right * move_direction.x + forward * -move_direction.z)
+
 		camera.global_position += movement * scroll_speed * delta
 		camera.global_position.x = clamp(camera.global_position.x, -max_view_range.x / 2.0, max_view_range.x / 2.0)
 		camera.global_position.z = clamp(camera.global_position.z, -max_view_range.y / 2.0, max_view_range.y / 2.0)
