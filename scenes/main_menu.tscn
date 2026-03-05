@@ -1,0 +1,94 @@
+[gd_scene load_steps=7 format=3 uid="uid://a8x4j5k6l7m8q"]
+
+[ext_resource type="Script" path="res://scenes/main_menu.gd" id="1_script"]
+
+[sub_resource type="Shader" id="Shader_Grid"]
+code = "shader_type spatial;
+
+void fragment() {
+    float grid_size = 1.0;
+    float line_width = 0.05;
+    vec2 grid = abs(fract(UV * 10.0 - 0.5) - 0.5) / line_width;
+    float line = min(grid.x, grid.y);
+    float mask = 1.0 - clamp(line, 0.0, 1.0);
+    ALBEDO = vec3(0.2, 0.2, 0.2) + mask * vec3(0.1, 0.4, 0.1);
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_Grid"]
+render_priority = 0
+shader = SubResource("Shader_Grid")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_Grid"]
+material = SubResource("ShaderMaterial_Grid")
+size = Vector2(20, 20)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_Sky"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_Sky"]
+sky_material = SubResource("ProceduralSkyMaterial_Sky")
+
+[sub_resource type="Environment" id="Environment_Sky"]
+background_mode = 2
+sky = SubResource("Sky_Sky")
+tonemap_mode = 2
+glow_enabled = true
+
+[node name="MainMenu" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_Sky")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0, 0)
+shadow_enabled = true
+
+[node name="MapPlane" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_Grid")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.707107, -0.408248, 0.57735, 0, 0.816497, 0.57735, -0.707107, -0.408248, 0.57735, 10, 10, 10)
+projection = 1
+size = 10.0
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Control" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = -50.0
+offset_right = 50.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlayButton" type="Button" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+text = "Play"
+
+[node name="OptionsButton" type="Button" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+text = "Options"
+
+[node name="ExitButton" type="Button" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+text = "Exit"
+
+[connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/PlayButton" to="." method="_on_play_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/OptionsButton" to="." method="_on_options_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/ExitButton" to="." method="_on_exit_button_pressed"]
