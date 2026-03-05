@@ -11,10 +11,19 @@ var max_view_range: Vector2 = Vector2(40.0, 40.0)
 
 var current_building_type: String = ""
 var occupied_tiles: Dictionary = {} # Vector2i -> Node3D
+var navigation_grid: AStarGrid2D
 var farm_scene = preload("res://scenes/buildings/farm.tscn")
 var magasine_scene = preload("res://scenes/buildings/magasine.tscn")
 
 func _ready():
+	Global.game_node = self
+
+	# Initialize Navigation
+	navigation_grid = AStarGrid2D.new()
+	navigation_grid.region = Rect2i(-int(map_size.x/2), -int(map_size.y/2), int(map_size.x), int(map_size.y))
+	navigation_grid.cell_size = Vector2(1, 1)
+	navigation_grid.update()
+
 	# Register existing buildings
 	for building in buildings_parent.get_children():
 		var size = building.get("grid_size") if "grid_size" in building else Vector2i(1, 1)
@@ -26,6 +35,8 @@ func _ready():
 		for x in range(size.x):
 			for y in range(size.y):
 				occupied_tiles[grid_pos + Vector2i(x, y)] = building
+
+		update_navigation_for_building(grid_pos, size, true)
 
 	placement_preview.visible = false
 
@@ -157,8 +168,41 @@ func place_building(grid_pos: Vector2i):
 		for x in range(size.x):
 			for y in range(size.y):
 				occupied_tiles[grid_pos + Vector2i(x, y)] = new_building
+
+		update_navigation_for_building(grid_pos, size, true)
 		# Optionally exit build mode or stay for multiple placements
 		# Let's stay in build mode for now as per "user selection" then "can build"
+
+func update_navigation_for_building(grid_pos: Vector2i, size: Vector2i, solid: bool):
+	if navigation_grid:
+		for x in range(size.x):
+			for y in range(size.y):
+				navigation_grid.set_point_solid(grid_pos + Vector2i(x, y), solid)
+
+func get_path_to_destination(start_world: Vector3, end_world: Vector3) -> Array[Vector3]:
+	var path: Array[Vector3] = []
+	if not navigation_grid:
+		return path
+
+	var start_grid = world_to_grid(start_world)
+	var end_grid = world_to_grid(end_world)
+
+	# Make sure start and end points are walkable for the path calculation
+	var was_start_solid = navigation_grid.is_point_solid(start_grid)
+	var was_end_solid = navigation_grid.is_point_solid(end_grid)
+
+	navigation_grid.set_point_solid(start_grid, false)
+	navigation_grid.set_point_solid(end_grid, false)
+
+	var grid_path = navigation_grid.get_point_path(start_grid, end_grid)
+
+	navigation_grid.set_point_solid(start_grid, was_start_solid)
+	navigation_grid.set_point_solid(end_grid, was_end_solid)
+
+	for point in grid_path:
+		path.append(Vector3(point.x + 0.5, 0, point.y + 0.5))
+
+	return path
 
 func cancel_build_mode():
 	current_building_type = ""
