@@ -61,10 +61,10 @@ func handle_camera_movement(delta):
 		camera.global_position.z = clamp(camera.global_position.z, -max_view_range.y / 2.0, max_view_range.y / 2.0)
 
 func world_to_grid(world_pos: Vector3) -> Vector2i:
-	return Vector2i(round(world_pos.x), round(world_pos.z))
+	return Vector2i(floor(world_pos.x), floor(world_pos.z))
 
 func grid_to_world(grid_pos: Vector2i) -> Vector3:
-	return Vector3(grid_pos.x, 0, grid_pos.y)
+	return Vector3(grid_pos.x + 0.5, 0, grid_pos.y + 0.5)
 
 func get_mouse_world_pos() -> Vector3:
 	var mouse_pos = get_viewport().get_mouse_position()
