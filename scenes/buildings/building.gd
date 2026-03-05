@@ -58,6 +58,8 @@ func _on_production_timer_timeout():
 	if stored_goods < max_capacity:
 		stored_goods += 1
 		print(building_name, " produced ", goods_type, ". Total: ", stored_goods)
+		if goods_type == "Carrots":
+			Global.add_carrots(1)
 
 	update_state()
 	if current_state == State.PRODUCING:
