@@ -36,34 +36,34 @@ animation = &"idle"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
 
 [node name="Item1" type="Sprite3D" parent="Items"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
 visible = false
 axis = 1
-pixel_size = 0.002
+pixel_size = 0.001
 render_priority = 1
 texture = ExtResource("2_icon")
 
 [node name="Item2" type="Sprite3D" parent="Items"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 visible = false
 axis = 1
-pixel_size = 0.002
+pixel_size = 0.001
 render_priority = 1
 texture = ExtResource("2_icon")
 
 [node name="Item3" type="Sprite3D" parent="Items"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
 visible = false
 axis = 1
-pixel_size = 0.002
+pixel_size = 0.001
 render_priority = 1
 texture = ExtResource("2_icon")
 
 [node name="Item4" type="Sprite3D" parent="Items"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
 visible = false
 axis = 1
-pixel_size = 0.002
+pixel_size = 0.001
 render_priority = 1
 texture = ExtResource("2_icon")
 

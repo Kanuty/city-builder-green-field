@@ -54,11 +54,11 @@ func _add_visual_item(goods_type: String):
 
 	# Adjust properties
 	sprite.axis = Vector3.AXIS_Y
-	sprite.pixel_size = 0.002 # scale them down properly
+	sprite.pixel_size = 0.001 # scale them down properly
 	sprite.render_priority = 1
 	# Random Y rotation and Y offset
-	sprite.rotation.y = randf() * TAU
-	sprite.position = pos + Vector3(0, 0.05 + randf_range(0.0, 0.05), 0)
+	sprite.rotation.y = (randi() % 4) * PI / 2.0
+	sprite.position = pos + Vector3(0, 0.01 + randf_range(0.0, 0.01), 0)
 
 	add_child(sprite)
 	item_sprites.append(sprite)
@@ -82,6 +82,29 @@ func reserve(amount: int) -> bool:
 
 func cancel_reservation(amount: int):
 	reserved_space = max(0, reserved_space - amount)
+
+func reserve_for_fetch(amount: int, goods_type: String) -> bool:
+	if stored_items.has(goods_type) and stored_items[goods_type] >= amount:
+		stored_items[goods_type] -= amount
+		total_stored -= amount
+		Global.remove_goods(goods_type, amount)
+		# Temporarily removing sprites for simplicity when fetching
+		var removed = 0
+		var keep_sprites = []
+		for sprite in item_sprites:
+			# Not an exact goods_type match for removal, just removing N sprites
+			if removed < amount:
+				sprite.queue_free()
+				removed += 1
+			else:
+				keep_sprites.append(sprite)
+		item_sprites = keep_sprites
+		next_slot_index -= removed
+		return true
+	return false
+
+func remove_for_fetch(amount: int, goods_type: String):
+	pass # Logic is handled in reserve_for_fetch to ensure items aren't taken by others
 
 func receive_delivery(amount: int, goods_type: String):
 	reserved_space = max(0, reserved_space - amount)
