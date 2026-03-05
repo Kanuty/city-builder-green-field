@@ -1,7 +1,7 @@
 extends Node3D
 
 signal delivery_finished(amount)
-signal delivery_failed()
+signal delivery_failed(reason)
 
 @export var speed: float = 1.0
 
@@ -43,10 +43,10 @@ func setup(p_spawner: Node3D, p_warehouse: Node3D, p_goods_type: String, p_amoun
 		else:
 			print("Unit: No path to warehouse found!")
 			# Use call_deferred to avoid emitting signal during setup if it leads to immediate destruction/state change issues
-			call_deferred("_fail")
+			call_deferred("_fail", "No path to warehouse found")
 	else:
 		print("Unit: Global.game_node is null!")
-		call_deferred("_fail")
+		call_deferred("_fail", "Global.game_node is null")
 
 func setup_fetch(p_spawner: Node3D, p_warehouse: Node3D, p_goods_type: String, p_amount: int, p_timeout: float = 60.0):
 	is_fetching = true
@@ -70,14 +70,14 @@ func setup_fetch(p_spawner: Node3D, p_warehouse: Node3D, p_goods_type: String, p
 			timeout_timer.start()
 		else:
 			print("Unit: No path to warehouse found!")
-			call_deferred("_fail")
+			call_deferred("_fail", "No path to warehouse found")
 	else:
 		print("Unit: Global.game_node is null!")
-		call_deferred("_fail")
+		call_deferred("_fail", "Global.game_node is null")
 
 func _process(delta):
 	if not is_instance_valid(spawner):
-		_fail() # spawner destroyed, unit dies and goods are lost
+		_fail("Spawner destroyed") # spawner destroyed, unit dies and goods are lost
 		return
 
 	if not is_instance_valid(warehouse) and not returning:
@@ -126,7 +126,7 @@ func _reach_destination():
 				spawner.receive_fetched_goods(amount, goods_type)
 				delivery_finished.emit(amount)
 			else:
-				delivery_failed.emit()
+				delivery_failed.emit("Spawner destroyed or no goods")
 			queue_free()
 		elif is_instance_valid(warehouse):
 			# Actually remove items from warehouse now that we've arrived
@@ -139,7 +139,7 @@ func _reach_destination():
 			if amount > 0:
 				if is_instance_valid(spawner):
 					spawner.receive_returned_goods(amount)
-				delivery_failed.emit() # Consider it failed as it didn't reach warehouse
+				delivery_failed.emit("Failed to reach warehouse, returned to spawner") # Consider it failed as it didn't reach warehouse
 			queue_free()
 		elif is_instance_valid(warehouse):
 			warehouse.receive_delivery(amount, goods_type)
@@ -160,9 +160,9 @@ func start_return_to_spawner():
 			target_index = 0
 			timeout_timer.start()
 		else:
-			_fail()
+			_fail("No path back to spawner")
 	else:
-		_fail()
+		_fail("No game node or spawner invalid")
 
 func _update_visuals():
 	for i in range(4):
@@ -182,15 +182,16 @@ func _update_visuals():
 			else:
 				item_node.texture = potato_texture # fallback
 
-func _fail():
+func _fail(reason: String = "Unknown reason"):
+	print("Unit delivery failed: ", reason)
 	if not returning and is_instance_valid(warehouse):
 		if is_fetching:
 			warehouse.cancel_fetch_reservation(amount, goods_type)
 		else:
 			warehouse.cancel_reservation(amount)
-	delivery_failed.emit()
+	delivery_failed.emit(reason)
 	queue_free()
 
 func _on_timeout_timer_timeout():
 	print("Unit: Delivery timed out!")
-	_fail()
+	_fail("Timeout")

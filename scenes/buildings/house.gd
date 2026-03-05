@@ -66,7 +66,7 @@ func _on_unit_delivery_finished(amount_delivered: int):
 	# Decrement fetch counter (goods handled in receive_fetched_goods)
 	pass # It's actually handled in receive_fetched_goods now. active_fetches -= 1 is there.
 
-func _on_unit_delivery_failed():
+func _on_unit_delivery_failed(reason: String = "Unknown reason"):
 	active_fetches -= 1
 
 func _on_fetch_timer_timeout():
@@ -95,7 +95,9 @@ func _on_consume_timer_timeout():
 func update_level():
 	var old_level = house_level
 
-	if stored_pottery > 0 and stored_food > 0:
+	if stored_food == 0:
+		house_level = 0
+	elif stored_pottery > 0 and stored_food > 0:
 		house_level = 2
 	else:
 		house_level = 1
@@ -104,7 +106,9 @@ func update_level():
 		update_visuals()
 
 func update_visuals():
-	if house_level == 1:
+	if house_level == 0:
+		sprite.modulate = Color(0.5, 0.5, 0.5) # Grey
+	elif house_level == 1:
 		sprite.modulate = Color(0.0, 1.0, 0.0) # Green
 	elif house_level == 2:
 		sprite.modulate = Color(1.0, 1.0, 0.0) # Yellow
