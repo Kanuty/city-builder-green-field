@@ -58,8 +58,8 @@ func _process(delta):
 
 		start_return_to_spawner()
 
-	if returning:
-		# If we are returning to spawner, check if a new magazine became available
+	if returning and amount > 0:
+		# If we are returning to spawner with goods, check if a new magazine became available
 		var new_magazine = Global.find_nearest_magazine(global_position)
 		if new_magazine:
 			if new_magazine.reserve(amount):
@@ -87,14 +87,17 @@ func _process(delta):
 
 func _reach_destination():
 	if returning:
-		if is_instance_valid(spawner):
-			spawner.receive_returned_goods(amount)
-		delivery_failed.emit() # Consider it failed as it didn't reach magazine
+		if amount > 0:
+			if is_instance_valid(spawner):
+				spawner.receive_returned_goods(amount)
+			delivery_failed.emit() # Consider it failed as it didn't reach magazine
 		queue_free()
 	elif is_instance_valid(magazine):
 		magazine.receive_delivery(amount, goods_type)
 		delivery_finished.emit(amount)
-		queue_free()
+		amount = 0
+		_update_visuals()
+		start_return_to_spawner()
 	else:
 		start_return_to_spawner()
 
@@ -104,6 +107,7 @@ func start_return_to_spawner():
 		path = Global.game_node.get_path_to_destination(global_position, spawner.global_position)
 		if path.size() > 0:
 			target_index = 0
+			timeout_timer.start()
 		else:
 			_fail()
 	else:

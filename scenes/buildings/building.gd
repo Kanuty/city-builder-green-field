@@ -53,13 +53,14 @@ func _on_magazine_registered():
 		try_send_to_magazine()
 
 func update_state():
+	if stored_goods >= 4 or stored_goods >= max_capacity:
+		try_send_to_magazine()
 	var old_state = current_state
 
 	if current_workers == 0:
 		current_state = State.NO_WORKERS
 	elif stored_goods >= max_capacity:
 		current_state = State.IDLE
-		try_send_to_magazine()
 	else:
 		current_state = State.PRODUCING
 
