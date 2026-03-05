@@ -15,8 +15,10 @@ const PRODUCIBLE_GOODS = {
 
 var available_workforce: int = 100:
 	set(value):
+		var old_value = available_workforce
 		available_workforce = max(0, value)
-		workforce_changed.emit(available_workforce)
+		if old_value != available_workforce:
+			workforce_changed.emit.call_deferred(available_workforce)
 
 var inventory: Dictionary = {
 	"Carrots": 0
