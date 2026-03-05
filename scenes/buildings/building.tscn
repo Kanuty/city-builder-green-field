@@ -24,7 +24,9 @@ animations = [{
 script = ExtResource("1_script")
 
 [node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+axis = 1
+pixel_size = 0.0078125
 sprite_frames = SubResource("SpriteFrames_1")
 animation = &"idle"
 
