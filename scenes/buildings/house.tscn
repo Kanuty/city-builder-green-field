@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://d9a5b6c7d8e9f"]
+[gd_scene format=3 uid="uid://evap4fxs1jin"]
 
 [ext_resource type="Script" path="res://scenes/buildings/house.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://djhho0a4mc8aa" path="res://img/farm/farm2.png" id="2_texture"]
