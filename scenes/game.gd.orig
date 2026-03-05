@@ -18,8 +18,6 @@ var potato_farm_scene = preload("res://scenes/buildings/potato_farm.tscn")
 var clay_pit_scene = preload("res://scenes/buildings/clay_pit.tscn")
 var pottery_house_scene = preload("res://scenes/buildings/pottery_house.tscn")
 var warehouse_scene = preload("res://scenes/buildings/warehouse.tscn")
-var cooking_den_scene = preload("res://scenes/buildings/cooking_den.tscn")
-var house_scene = preload("res://scenes/buildings/house.tscn")
 
 func _ready():
 	Global.game_node = self
@@ -162,7 +160,7 @@ func is_area_free(grid_pos: Vector2i, size: Vector2i) -> bool:
 	return true
 
 func get_current_building_size() -> Vector2i:
-	if current_building_type == "Carrot Farm" or current_building_type == "Potato Farm" or current_building_type == "Clay Pit" or current_building_type == "Pottery House" or current_building_type == "Cooking Den" or current_building_type == "House":
+	if current_building_type == "Carrot Farm" or current_building_type == "Potato Farm" or current_building_type == "Clay Pit" or current_building_type == "Pottery House":
 		return Vector2i(1, 1)
 	elif current_building_type == "Warehouse":
 		return Vector2i(2, 2)
@@ -193,10 +191,6 @@ func place_building(grid_pos: Vector2i):
 		new_building = pottery_house_scene.instantiate()
 	elif current_building_type == "Warehouse":
 		new_building = warehouse_scene.instantiate()
-	elif current_building_type == "Cooking Den":
-		new_building = cooking_den_scene.instantiate()
-	elif current_building_type == "House":
-		new_building = house_scene.instantiate()
 
 	if new_building:
 		var size = new_building.get("grid_size") if "grid_size" in new_building else Vector2i(1, 1)

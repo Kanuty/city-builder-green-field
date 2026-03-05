@@ -22,6 +22,10 @@ const PRODUCIBLE_GOODS = {
 	"Pottery": {
 		"name": "Pottery",
 		"base_price": 20
+	},
+	"Food": {
+		"name": "Food",
+		"base_price": 15
 	}
 }
 
@@ -36,7 +40,8 @@ var inventory: Dictionary = {
 	"Carrots": 0,
 	"Potato": 0,
 	"Clay": 0,
-	"Pottery": 0
+	"Pottery": 0,
+	"Food": 0
 }
 
 var warehouses: Array = []
