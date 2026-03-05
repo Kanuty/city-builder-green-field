@@ -38,6 +38,8 @@ var carrots_texture = preload("res://img/goods/carrots_01.png")
 var clay_texture = preload("res://img/clay/clay.png")
 var pottery_texture = preload("res://img/clay/pottery.png")
 
+var produced_goods_icon: Sprite3D
+
 func _ready():
 	if not Global.PRODUCIBLE_GOODS.has(goods_type):
 		var error_message = "Building error: %s tried to produce invalid goods type '%s'." % [building_name, goods_type]
@@ -46,6 +48,26 @@ func _ready():
 		return
 
 	Global.warehouse_registered.connect(_on_warehouse_registered)
+
+	produced_goods_icon = Sprite3D.new()
+	produced_goods_icon.axis = Vector3.AXIS_Y
+	produced_goods_icon.pixel_size = 0.003
+	produced_goods_icon.render_priority = 2
+	produced_goods_icon.position = Vector3(0, 1.0, 0)
+
+	if goods_type == "Carrots":
+		produced_goods_icon.texture = carrots_texture
+	elif goods_type == "Potato":
+		produced_goods_icon.texture = potato_texture
+	elif goods_type == "Clay":
+		produced_goods_icon.texture = clay_texture
+	elif goods_type == "Pottery":
+		produced_goods_icon.texture = pottery_texture
+	else:
+		produced_goods_icon.texture = potato_texture
+
+	add_child(produced_goods_icon)
+
 	update_state()
 	# Try to get workers from global workforce
 	current_workers = Global.request_workers(max_workers)

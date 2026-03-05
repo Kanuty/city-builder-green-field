@@ -16,6 +16,8 @@ var next_slot_index: int = 0
 
 var potato_texture = preload("res://img/goods/potato.png")
 var carrots_texture = preload("res://img/goods/carrots_01.png")
+var clay_texture = preload("res://img/clay/clay.png")
+var pottery_texture = preload("res://img/clay/pottery.png")
 
 func _ready():
 	_register_in_global.call_deferred()
@@ -49,6 +51,10 @@ func _add_visual_item(goods_type: String):
 		sprite.texture = carrots_texture
 	elif goods_type == "Potato":
 		sprite.texture = potato_texture
+	elif goods_type == "Clay":
+		sprite.texture = clay_texture
+	elif goods_type == "Pottery":
+		sprite.texture = pottery_texture
 	else:
 		sprite.texture = potato_texture # fallback
 
