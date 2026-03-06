@@ -7,22 +7,7 @@ extends Control
 @onready var goals_label = $MarginContainer/HBoxContainer/RightPanel/MissionGoals
 @onready var go_button = $MarginContainer/HBoxContainer/RightPanel/HBoxContainer/GoButton
 
-var campaigns = [
-	{
-		"name": "Campaign 1",
-		"missions": [
-			{
-				"name": "Mission 1",
-				"description": "This is the first mission of the campaign.",
-				"goals": "- Maintain population of at least 100\n- Have at least 4 houses level 2",
-				"structured_goals": [
-					{"type": "population", "target": 100, "text": "Maintain population of at least 100"},
-					{"type": "houses", "level": 2, "target": 4, "text": "Have at least 4 houses level 2"}
-				]
-			}
-		]
-	}
-]
+var campaigns = Global.campaigns
 
 var selected_campaign_idx = -1
 var selected_mission_idx = -1
@@ -60,8 +45,11 @@ func _clear_mission_details():
 
 func _on_go_button_pressed():
 	if selected_campaign_idx != -1 and selected_mission_idx != -1:
+		Global.current_campaign_idx = selected_campaign_idx
+		Global.current_mission_idx = selected_mission_idx
 		Global.current_mission_goals = campaigns[selected_campaign_idx]["missions"][selected_mission_idx].get("structured_goals", [])
 		get_tree().change_scene_to_file("res://scenes/game.tscn")
+
 
 func _on_back_button_pressed():
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")

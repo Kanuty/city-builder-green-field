@@ -4,6 +4,9 @@ extends Control
 @onready var picture_rect = $PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/PictureRect
 @onready var content_label = $PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/ContentLabel
 
+func _ready():
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
 var unit_node: Node3D
 
 func setup(p_unit: Node3D):
@@ -31,10 +34,12 @@ func setup(p_unit: Node3D):
 func _unhandled_input(event):
 	if event.is_action_pressed("ui_cancel"):
 		close()
+		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		var panel = $PanelContainer
 		if not panel.get_global_rect().has_point(event.global_position):
 			close()
+			get_viewport().set_input_as_handled()
 
 func close():
 	get_tree().paused = false

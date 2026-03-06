@@ -56,6 +56,36 @@ var warehouses: Array = []
 
 var current_mission_goals: Array = []
 
+var current_campaign_idx: int = -1
+var current_mission_idx: int = -1
+
+var campaigns = [
+	{
+		"name": "Campaign 1",
+		"missions": [
+			{
+				"name": "Mission 1",
+				"description": "This is the first mission of the campaign.",
+				"goals": "- Maintain population of at least 100\n- Have at least 4 houses level 2",
+				"structured_goals": [
+					{"type": "population", "target": 100, "text": "Maintain population of at least 100"},
+					{"type": "houses", "level": 2, "target": 4, "text": "Have at least 4 houses level 2"}
+				]
+			},
+			{
+				"name": "Mission 2",
+				"description": "The village is growing. Now we need to produce more food and attract even more goblins.",
+				"goals": "- Maintain population of at least 200\n- Have at least 10 houses level 2",
+				"structured_goals": [
+					{"type": "population", "target": 200, "text": "Maintain population of at least 200"},
+					{"type": "houses", "level": 2, "target": 10, "text": "Have at least 10 houses level 2"}
+				]
+			}
+		]
+	}
+]
+
+
 func register_warehouse(warehouse):
 	if not warehouses.has(warehouse):
 		warehouses.append(warehouse)
