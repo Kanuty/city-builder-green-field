@@ -54,7 +54,16 @@ func setup(building: Node3D):
 
 	# House specific
 	elif "stored_food" in building and "stored_pottery" in building:
-		info_text += "House Level: " + str(building.house_level) + "\n"
+		var level = building.house_level
+		if level == 0:
+			title_label.text = "Dugout"
+		elif level == 1:
+			title_label.text = "Mud hut"
+		elif level == 2:
+			title_label.text = "Mud cot"
+
+		info_text += "House Level: " + str(level) + "\n"
+		info_text += "Population: " + str(building.current_population) + " / " + str(building.get_max_population(level)) + "\n"
 		info_text += "Food: " + str(building.stored_food)
 		if "max_food_capacity" in building:
 			info_text += " / " + str(building.max_food_capacity)
@@ -62,7 +71,14 @@ func setup(building: Node3D):
 		info_text += "Pottery: " + str(building.stored_pottery)
 		if "max_pottery_capacity" in building:
 			info_text += " / " + str(building.max_pottery_capacity)
-		info_text += "\n"
+		info_text += "\n\n"
+
+		if level == 0:
+			info_text += "Without any food, we won't attract any goblins\n"
+		elif level == 1:
+			info_text += "Without pottery I can't store my goods! Me no like!\n"
+		elif level == 2:
+			info_text += "It is so boring here...\n"
 
 	if info_text == "":
 		info_text = "No goods stored."

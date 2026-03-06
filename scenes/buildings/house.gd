@@ -97,7 +97,7 @@ func _on_consume_timer_timeout():
 
 func get_max_population(level: int) -> int:
 	if level == 0:
-		return 0
+		return 2
 	elif level == 1:
 		return 5
 	elif level == 2:
