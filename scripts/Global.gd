@@ -4,6 +4,7 @@ signal workforce_changed(new_value)
 signal population_changed(new_value)
 signal goods_updated(goods_id, new_value)
 signal warehouse_registered()
+signal autosave_completed()
 
 var game_node: Node3D
 
@@ -199,3 +200,108 @@ func remove_goods(goods_id: String, amount: int):
 	if inventory.has(goods_id):
 		inventory[goods_id] = max(0, inventory[goods_id] - amount)
 		goods_updated.emit(goods_id, inventory[goods_id])
+
+
+func get_save_data() -> Dictionary:
+	var buildings_data = []
+	if is_instance_valid(game_node):
+		for building in game_node.buildings_parent.get_children():
+			var b_data = {
+				"scene_path": building.scene_file_path,
+				"global_position_x": building.global_position.x,
+				"global_position_y": building.global_position.y,
+				"global_position_z": building.global_position.z,
+			}
+			buildings_data.append(b_data)
+
+	var data = {
+		"available_workforce": available_workforce,
+		"total_population": total_population,
+		"inventory": inventory,
+		"current_mission_goals": current_mission_goals,
+		"current_campaign_idx": current_campaign_idx,
+		"current_mission_idx": current_mission_idx,
+		"unlocked_missions": unlocked_missions,
+		"buildings": buildings_data
+	}
+	return data
+
+func save_game(save_name: String):
+	var data = get_save_data()
+	var dir = DirAccess.open("user://")
+	if not dir.dir_exists("saves"):
+		dir.make_dir("saves")
+
+	var file = FileAccess.open("user://saves/" + save_name + ".json", FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(data))
+
+func load_game_request(save_name: String):
+	call_deferred("_do_load_game", save_name)
+
+func _do_load_game(save_name: String):
+
+
+	var current_scene_name = get_tree().current_scene.name
+	if current_scene_name != "Game":
+		# wait for scene change instead of arbitrary timeout
+		await get_tree().process_frame
+		while get_tree().current_scene.name != "Game":
+			await get_tree().process_frame
+		# wait another frame for ready to complete
+		await get_tree().process_frame
+
+
+	var file = FileAccess.open("user://saves/" + save_name + ".json", FileAccess.READ)
+	if file:
+		var data = JSON.parse_string(file.get_as_text())
+		if typeof(data) == TYPE_DICTIONARY:
+			available_workforce = data.get("available_workforce", 0)
+			total_population = data.get("total_population", 0)
+			inventory = data.get("inventory", {
+				"Carrots": 0, "Potato": 0, "Clay": 0, "Pottery": 0, "Food": 0
+			})
+			current_mission_goals = data.get("current_mission_goals", [])
+			current_campaign_idx = data.get("current_campaign_idx", -1)
+			current_mission_idx = data.get("current_mission_idx", -1)
+
+			var ulm = data.get("unlocked_missions", {})
+			unlocked_missions.clear()
+			for k in ulm.keys():
+				unlocked_missions[int(k)] = ulm[k]
+
+			if is_instance_valid(game_node):
+				# Need to reconstruct buildings
+				for child in game_node.buildings_parent.get_children():
+					child.queue_free()
+
+				# Wait a frame for children to free
+				await get_tree().process_frame
+
+				# Clear occupied_tiles and navigation_grid
+				game_node.occupied_tiles.clear()
+				game_node.navigation_grid.update()
+
+				var buildings = data.get("buildings", [])
+				for b_data in buildings:
+					var scene = load(b_data["scene_path"])
+					if scene:
+						var inst = scene.instantiate()
+						game_node.buildings_parent.add_child(inst)
+						inst.global_position = Vector3(
+							b_data["global_position_x"],
+							b_data["global_position_y"],
+							b_data["global_position_z"]
+						)
+						var size = inst.get("grid_size") if "grid_size" in inst else Vector2i(1, 1)
+						var grid_pos = game_node.world_to_grid(inst.global_position - Vector3(size.x / 2.0, 0, size.y / 2.0))
+						for x in range(size.x):
+							for y in range(size.y):
+								game_node.occupied_tiles[grid_pos + Vector2i(x, y)] = inst
+						game_node.update_navigation_for_building(grid_pos, size, true)
+
+			# Re-emit signals
+			workforce_changed.emit(available_workforce)
+			population_changed.emit(total_population)
+			for k in inventory.keys():
+				goods_updated.emit(k, inventory[k])
