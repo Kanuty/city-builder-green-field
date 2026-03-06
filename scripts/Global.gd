@@ -54,6 +54,8 @@ var inventory: Dictionary = {
 
 var warehouses: Array = []
 
+var current_mission_goals: Array = []
+
 func register_warehouse(warehouse):
 	if not warehouses.has(warehouse):
 		warehouses.append(warehouse)

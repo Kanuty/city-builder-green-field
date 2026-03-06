@@ -14,7 +14,11 @@ var campaigns = [
 			{
 				"name": "Mission 1",
 				"description": "This is the first mission of the campaign.",
-				"goals": "- Build a farm\n- Gather 100 food"
+				"goals": "- Maintain population of at least 100\n- Have at least 4 houses level 2",
+				"structured_goals": [
+					{"type": "population", "target": 100, "text": "Maintain population of at least 100"},
+					{"type": "houses", "level": 2, "target": 4, "text": "Have at least 4 houses level 2"}
+				]
 			}
 		]
 	}
@@ -56,6 +60,7 @@ func _clear_mission_details():
 
 func _on_go_button_pressed():
 	if selected_campaign_idx != -1 and selected_mission_idx != -1:
+		Global.current_mission_goals = campaigns[selected_campaign_idx]["missions"][selected_mission_idx].get("structured_goals", [])
 		get_tree().change_scene_to_file("res://scenes/game.tscn")
 
 func _on_back_button_pressed():

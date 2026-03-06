@@ -29,8 +29,12 @@ func setup(p_unit: Node3D):
 	content_label.text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam."
 
 func _unhandled_input(event):
-	if event.is_action_pressed("ui_cancel") or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
+	if event.is_action_pressed("ui_cancel"):
 		close()
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		var panel = $PanelContainer
+		if not panel.get_global_rect().has_point(event.global_position):
+			close()
 
 func close():
 	get_tree().paused = false
