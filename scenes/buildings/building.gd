@@ -111,7 +111,7 @@ func _update_visuals():
 	for i in range(stored_input_goods):
 		var sprite = Sprite3D.new()
 		sprite.axis = Vector3.AXIS_Y
-		sprite.pixel_size = 0.001
+		sprite.pixel_size = 0.00125
 		sprite.render_priority = 1
 		sprite.position = Vector3(-0.3, 0.05 * i, 0)
 
@@ -137,7 +137,7 @@ func _update_visuals():
 	for i in range(stored_goods):
 		var sprite = Sprite3D.new()
 		sprite.axis = Vector3.AXIS_Y
-		sprite.pixel_size = 0.001
+		sprite.pixel_size = 0.00125
 		sprite.render_priority = 1
 		sprite.position = Vector3(0.3, 0.05 * i, 0)
 		if goods_type == "Carrots":

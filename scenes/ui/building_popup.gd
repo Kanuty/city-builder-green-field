@@ -55,6 +55,10 @@ func setup(building: Node3D):
 	# House specific
 	elif "stored_food" in building and "stored_pottery" in building:
 		info_text += "House Level: " + str(building.house_level) + "\n"
+		info_text += "Population: " + str(building.current_population)
+		if building.has_method("get_max_population"):
+			info_text += " / " + str(building.get_max_population(building.house_level))
+		info_text += "\n"
 		info_text += "Food: " + str(building.stored_food)
 		if "max_food_capacity" in building:
 			info_text += " / " + str(building.max_food_capacity)
