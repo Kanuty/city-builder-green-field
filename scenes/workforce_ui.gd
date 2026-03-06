@@ -7,6 +7,7 @@ extends Control
 @onready var clay_label: Label = $Panel/MarginContainer/VBoxContainer/ClayLabel
 @onready var pottery_label: Label = $Panel/MarginContainer/VBoxContainer/PotteryLabel
 @onready var food_label: Label = $Panel/MarginContainer/VBoxContainer/FoodLabel
+@onready var goals_label: RichTextLabel = $GoalsPanel/MarginContainer/GoalsRichTextLabel
 
 func _ready():
 	Global.workforce_changed.connect(_on_workforce_changed)
@@ -58,3 +59,32 @@ func _update_pottery_label(value: int):
 
 func _update_food_label(value: int):
 	food_label.text = "Food: " + str(value)
+
+func _process(delta):
+	if Global.current_mission_goals.is_empty():
+		$GoalsPanel.visible = false
+		return
+
+	$GoalsPanel.visible = true
+	var goals_text = "[b]Goals:[/b]\n"
+
+	for goal in Global.current_mission_goals:
+		var is_met = false
+		if goal["type"] == "population":
+			if Global.total_population >= goal["target"]:
+				is_met = true
+		elif goal["type"] == "houses":
+			var count = 0
+			if Global.game_node and Global.game_node.buildings_parent:
+				for building in Global.game_node.buildings_parent.get_children():
+					if building.has_method("get_max_population") and building.house_level >= goal["level"]:
+						count += 1
+			if count >= goal["target"]:
+				is_met = true
+
+		if is_met:
+			goals_text += "[color=green]- " + goal["text"] + "[/color]\n"
+		else:
+			goals_text += "- " + goal["text"] + "\n"
+
+	goals_label.text = goals_text
