@@ -71,6 +71,8 @@ func _ready():
 
 	placement_preview.visible = false
 
+	load_state()
+
 func _process(delta):
 	handle_camera_movement(delta)
 
@@ -100,6 +102,103 @@ func _unhandled_input(event):
 				try_show_building_info()
 			elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 				try_show_unit_info()
+
+func save_state():
+	if Global.current_campaign_idx == -1: return
+
+	var state = {
+		"inventory": Global.inventory.duplicate(),
+		"total_population": Global.total_population,
+		"available_workforce": Global.available_workforce,
+		"buildings": []
+	}
+
+	for building in buildings_parent.get_children():
+		var b_state = {
+			"scene_file_path": building.scene_file_path,
+			"pos_x": building.global_position.x,
+			"pos_y": building.global_position.y,
+			"pos_z": building.global_position.z,
+			"rot_x": building.rotation.x,
+			"rot_y": building.rotation.y,
+			"rot_z": building.rotation.z
+		}
+
+		if building.has_method("serialize"):
+			b_state.merge(building.serialize())
+		else:
+			# Generic serialization for standard fields if serialize() is not defined
+			if "stored_goods" in building: b_state["stored_goods"] = building.stored_goods
+			if "stored_input_goods" in building: b_state["stored_input_goods"] = building.stored_input_goods
+			if "current_workers" in building: b_state["current_workers"] = building.current_workers
+			if "level" in building: b_state["level"] = building.level
+			if "current_population" in building: b_state["current_population"] = building.current_population
+			if "stored_food" in building: b_state["stored_food"] = building.stored_food
+			if "stored_items" in building: b_state["stored_items"] = building.stored_items.duplicate()
+
+		state["buildings"].append(b_state)
+
+	Global.save_campaign_state(Global.current_campaign_idx, state)
+
+func load_state():
+	if Global.current_campaign_idx == -1: return
+
+	var state = Global.load_campaign_state(Global.current_campaign_idx)
+	if state.is_empty(): return
+
+	# Clear existing buildings if any, to avoid duplicates (though usually map starts empty except for editor placed ones)
+	for building in buildings_parent.get_children():
+		var size = building.get("grid_size") if "grid_size" in building else Vector2i(1, 1)
+		var grid_pos = world_to_grid(building.global_position - Vector3(size.x / 2.0, 0, size.y / 2.0))
+		update_navigation_for_building(grid_pos, size, false)
+		for x in range(size.x):
+			for y in range(size.y):
+				occupied_tiles.erase(grid_pos + Vector2i(x, y))
+		building.queue_free()
+
+	# Restore global state safely via setters or properties
+	if "inventory" in state:
+		Global.inventory = state["inventory"]
+		for goods_id in Global.inventory:
+			Global.goods_updated.emit(goods_id, Global.inventory[goods_id])
+
+	if "total_population" in state:
+		Global.total_population = state["total_population"]
+
+	if "available_workforce" in state:
+		Global.available_workforce = state["available_workforce"]
+
+	if "buildings" in state:
+		for b_state in state["buildings"]:
+			var scene_path = b_state.get("scene_file_path", "")
+			if scene_path == "": continue
+
+			var scene = load(scene_path)
+			if not scene: continue
+
+			var building = scene.instantiate()
+			building.global_position = Vector3(b_state["pos_x"], b_state["pos_y"], b_state["pos_z"])
+			building.rotation = Vector3(b_state["rot_x"], b_state["rot_y"], b_state["rot_z"])
+			buildings_parent.add_child(building)
+
+			if building.has_method("deserialize"):
+				building.deserialize(b_state)
+			else:
+				# Generic deserialization
+				if "stored_goods" in b_state and "stored_goods" in building: building.stored_goods = b_state["stored_goods"]
+				if "stored_input_goods" in b_state and "stored_input_goods" in building: building.stored_input_goods = b_state["stored_input_goods"]
+				if "current_workers" in b_state and "current_workers" in building: building.current_workers = b_state["current_workers"]
+				if "level" in b_state and "level" in building: building.level = b_state["level"]
+				if "current_population" in b_state and "current_population" in building: building.current_population = b_state["current_population"]
+				if "stored_food" in b_state and "stored_food" in building: building.stored_food = b_state["stored_food"]
+				if "stored_items" in b_state and "stored_items" in building: building.stored_items = b_state["stored_items"].duplicate()
+
+			var size = building.get("grid_size") if "grid_size" in building else Vector2i(1, 1)
+			var grid_pos = world_to_grid(building.global_position - Vector3(size.x / 2.0, 0, size.y / 2.0))
+			for x in range(size.x):
+				for y in range(size.y):
+					occupied_tiles[grid_pos + Vector2i(x, y)] = building
+			update_navigation_for_building(grid_pos, size, true)
 
 func handle_camera_movement(delta):
 	var viewport_size = get_viewport().get_visible_rect().size

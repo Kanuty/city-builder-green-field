@@ -55,6 +55,13 @@ func _on_go_button_pressed():
 		Global.current_campaign_idx = selected_campaign_idx
 		Global.current_mission_idx = selected_mission_idx
 		Global.current_mission_goals = campaigns[selected_campaign_idx]["missions"][selected_mission_idx].get("structured_goals", [])
+
+		# If starting Mission 1, ignore any previous state for this campaign
+		if selected_mission_idx == 0:
+			var path = "user://campaign_%d_state.json" % selected_campaign_idx
+			if FileAccess.file_exists(path):
+				DirAccess.remove_absolute(path)
+
 		get_tree().change_scene_to_file("res://scenes/game.tscn")
 
 

@@ -124,6 +124,31 @@ func reset_progress():
 		unlocked_missions[i] = -1 # -1 means no mission unlocked in this campaign
 	save_progress()
 
+	# Clear any saved campaign state
+	for i in range(campaigns.size()):
+		var path = "user://campaign_%d_state.json" % i
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(path)
+
+func has_saved_campaign_state(campaign_idx: int) -> bool:
+	return FileAccess.file_exists("user://campaign_%d_state.json" % campaign_idx)
+
+func save_campaign_state(campaign_idx: int, state_data: Dictionary):
+	var file = FileAccess.open("user://campaign_%d_state.json" % campaign_idx, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(state_data))
+
+func load_campaign_state(campaign_idx: int) -> Dictionary:
+	var path = "user://campaign_%d_state.json" % campaign_idx
+	if FileAccess.file_exists(path):
+		var file = FileAccess.open(path, FileAccess.READ)
+		if file:
+			var data = file.get_as_text()
+			var parsed = JSON.parse_string(data)
+			if typeof(parsed) == TYPE_DICTIONARY:
+				return parsed
+	return {}
+
 func unlock_next_mission():
 	if current_campaign_idx >= 0 and current_campaign_idx < campaigns.size():
 		var max_unlocked = unlocked_missions.get(current_campaign_idx, 0)
