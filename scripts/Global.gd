@@ -204,6 +204,7 @@ func remove_goods(goods_id: String, amount: int):
 
 func get_save_data() -> Dictionary:
 	var buildings_data = []
+	var units_data = []
 	if is_instance_valid(game_node):
 		for building in game_node.buildings_parent.get_children():
 			var b_data = {
@@ -214,6 +215,16 @@ func get_save_data() -> Dictionary:
 			}
 			buildings_data.append(b_data)
 
+		for unit in get_tree().get_nodes_in_group("units"):
+			var u_data = {
+				"scene_path": unit.scene_file_path,
+				"global_position_x": unit.global_position.x,
+				"global_position_y": unit.global_position.y,
+				"global_position_z": unit.global_position.z,
+				"is_pop": unit.has_method("setup") # Pop units have setup method, Transporters have setup_delivery/setup_fetch
+			}
+			units_data.append(u_data)
+
 	var data = {
 		"available_workforce": available_workforce,
 		"total_population": total_population,
@@ -222,7 +233,8 @@ func get_save_data() -> Dictionary:
 		"current_campaign_idx": current_campaign_idx,
 		"current_mission_idx": current_mission_idx,
 		"unlocked_missions": unlocked_missions,
-		"buildings": buildings_data
+		"buildings": buildings_data,
+		"units": units_data
 	}
 	return data
 
@@ -282,6 +294,10 @@ func _do_load_game(save_name: String):
 				game_node.occupied_tiles.clear()
 				game_node.navigation_grid.update()
 
+				# Remove existing units
+				for unit in get_tree().get_nodes_in_group("units"):
+					unit.queue_free()
+
 				var buildings = data.get("buildings", [])
 				for b_data in buildings:
 					var scene = load(b_data["scene_path"])
@@ -299,6 +315,31 @@ func _do_load_game(save_name: String):
 							for y in range(size.y):
 								game_node.occupied_tiles[grid_pos + Vector2i(x, y)] = inst
 						game_node.update_navigation_for_building(grid_pos, size, true)
+
+				var units = data.get("units", [])
+				for u_data in units:
+					var scene_path = u_data.get("scene_path", "")
+					if scene_path == "":
+						if u_data.get("is_pop", false):
+							scene_path = "res://scenes/units/pop.tscn"
+						else:
+							scene_path = "res://scenes/units/unit.tscn"
+
+					var pos = Vector3(u_data["global_position_x"], u_data["global_position_y"], u_data["global_position_z"])
+
+					var unit_scene = load(scene_path)
+					if unit_scene:
+						if u_data.get("is_pop", false):
+							if game_node.has_method("spawn_returning_pop"):
+								game_node.spawn_returning_pop(pos)
+						else:
+							# For now just instantiating a dummy unit that returns, as reconstructing full delivery state is complex
+							var inst = unit_scene.instantiate()
+							game_node.add_child(inst)
+							inst.global_position = pos
+							inst.returning = true
+							if game_node.buildings_parent.get_child_count() > 0:
+								inst.spawner = game_node.buildings_parent.get_child(0) # send somewhere to despawn or wait
 
 			# Re-emit signals
 			workforce_changed.emit(available_workforce)

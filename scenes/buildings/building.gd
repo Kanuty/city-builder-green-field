@@ -214,6 +214,7 @@ func try_send_to_warehouse():
 				if spawn_units:
 					if unit_type and current_spawned_units < max_spawned_units:
 						var unit = unit_type.instantiate()
+						unit.scene_file_path = unit_type.resource_path
 						get_parent().add_child(unit)
 						unit.global_position = global_position
 						unit.delivery_finished.connect(_on_unit_delivery_finished)
@@ -287,6 +288,7 @@ func try_fetch_from_warehouse():
 			if target_warehouse.reserve_for_fetch(amount_to_fetch, goods_to_fetch):
 				if unit_type:
 					var unit = unit_type.instantiate()
+					unit.scene_file_path = unit_type.resource_path
 					get_parent().add_child(unit)
 					unit.global_position = global_position
 					unit.delivery_finished.connect(_on_unit_delivery_finished)
