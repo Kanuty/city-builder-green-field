@@ -2,15 +2,13 @@
 
 [ext_resource type="PackedScene" uid="uid://b8y4j5k6l7m8p" path="res://scenes/buildings/building.tscn" id="1_building"]
 [ext_resource type="PackedScene" uid="uid://d1u2t3n4u5v6w" path="res://scenes/units/unit.tscn" id="1_unit"]
-[ext_resource type="Texture2D" uid="uid://bnnjj0cvd67b0" path="res://img/farm/farm.png" id="2_farm"]
-[ext_resource type="Texture2D" uid="uid://tjkm21uxdcrf" path="res://img/farm/farm1.png" id="3_farm1"]
-[ext_resource type="Texture2D" uid="uid://djhho0a4mc8aa" path="res://img/farm/farm2.png" id="4_farm2"]
+[ext_resource type="Texture2D" uid="uid://dt3sxijai2ejw" path="res://img/cooking_den/cooking_den.png" id="2_cooking_den"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_farm"]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("4_farm2")
+"texture": ExtResource("2_cooking_den")
 }],
 "loop": true,
 "name": &"idle",
@@ -18,7 +16,7 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("2_farm")
+"texture": ExtResource("2_cooking_den")
 }],
 "loop": true,
 "name": &"no_workers",
@@ -26,7 +24,7 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("3_farm1")
+"texture": ExtResource("2_cooking_den")
 }],
 "loop": true,
 "name": &"producing",

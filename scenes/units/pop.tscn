@@ -14,7 +14,7 @@ animations = [{
 "speed": 5.0
 }]
 
-[node name="Pop" type="Node3D"]
+[node name="Pop" type="Node3D" groups=["units"]]
 script = ExtResource("1_1")
 
 [node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
