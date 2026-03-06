@@ -87,7 +87,7 @@ func _on_fetch_timer_timeout():
 		try_fetch_goods("Pottery", max_pottery_capacity - stored_pottery)
 
 func _on_consume_timer_timeout():
-	var food_consumed = house_level
+	var food_consumed = 1
 	var pottery_consumed = 1 if house_level >= 2 else 0
 
 	stored_food = max(0, stored_food - food_consumed)
