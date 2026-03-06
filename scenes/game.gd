@@ -233,22 +233,31 @@ func try_place_building():
 
 func place_building(grid_pos: Vector2i):
 	var new_building
+	var scene_path = ""
 	if current_building_type == "Carrot Farm":
 		new_building = carrot_farm_scene.instantiate()
+		scene_path = carrot_farm_scene.resource_path
 	elif current_building_type == "Potato Farm":
 		new_building = potato_farm_scene.instantiate()
+		scene_path = potato_farm_scene.resource_path
 	elif current_building_type == "Clay Pit":
 		new_building = clay_pit_scene.instantiate()
+		scene_path = clay_pit_scene.resource_path
 	elif current_building_type == "Pottery House":
 		new_building = pottery_house_scene.instantiate()
+		scene_path = pottery_house_scene.resource_path
 	elif current_building_type == "Warehouse":
 		new_building = warehouse_scene.instantiate()
+		scene_path = warehouse_scene.resource_path
 	elif current_building_type == "Cooking Den":
 		new_building = cooking_den_scene.instantiate()
+		scene_path = cooking_den_scene.resource_path
 	elif current_building_type == "House":
 		new_building = house_scene.instantiate()
+		scene_path = house_scene.resource_path
 
 	if new_building:
+		new_building.scene_file_path = scene_path
 		var size = new_building.get("grid_size") if "grid_size" in new_building else Vector2i(1, 1)
 		buildings_parent.add_child(new_building)
 		new_building.global_position = grid_to_world_sized(grid_pos, size)
@@ -336,6 +345,7 @@ func _on_pop_spawn_timer_timeout():
 func spawn_pop(target_house: Node3D):
 	if pop_scene:
 		var pop = pop_scene.instantiate()
+		pop.scene_file_path = pop_scene.resource_path
 		add_child(pop)
 		pop.global_position = spawner_pos
 		pop.setup(target_house, spawner_pos, false)
@@ -343,6 +353,7 @@ func spawn_pop(target_house: Node3D):
 func spawn_returning_pop(start_pos: Vector3):
 	if pop_scene:
 		var pop = pop_scene.instantiate()
+		pop.scene_file_path = pop_scene.resource_path
 		add_child(pop)
 		pop.global_position = start_pos
 		pop.setup(null, spawner_pos, true)
