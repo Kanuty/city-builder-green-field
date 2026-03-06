@@ -8,3 +8,6 @@ func _on_options_button_pressed():
 
 func _on_exit_button_pressed():
 	get_tree().quit()
+
+func _on_load_button_pressed():
+	get_tree().change_scene_to_file("res://scenes/load_game_menu.tscn")

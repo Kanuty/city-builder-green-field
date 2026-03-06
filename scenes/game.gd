@@ -27,8 +27,29 @@ var pop_scene = preload("res://scenes/units/pop.tscn")
 var spawner_pos: Vector3 = Vector3(-10, 0, -10)
 var pop_spawn_timer: Timer
 
+
+var in_game_menu_scene = preload("res://scenes/ui/in_game_menu.tscn")
+var autosave_ui_scene = preload("res://scenes/autosave_ui.tscn")
+
+var in_game_menu
+var autosave_ui
+var autosave_timer
+
 func _ready():
 	Global.game_node = self
+
+	in_game_menu = in_game_menu_scene.instantiate()
+	add_child(in_game_menu)
+
+	autosave_ui = autosave_ui_scene.instantiate()
+	add_child(autosave_ui)
+
+	autosave_timer = Timer.new()
+	autosave_timer.wait_time = 300.0 # 5 minutes
+	autosave_timer.autostart = true
+	autosave_timer.timeout.connect(_on_autosave_timer_timeout)
+	add_child(autosave_timer)
+
 
 	$UI/BuildUI.destruction_mode_toggled.connect(_on_build_ui_destruction_mode_toggled)
 
@@ -372,3 +393,25 @@ func _on_build_ui_destruction_mode_toggled(active):
 	destruction_mode_active = active
 	if active:
 		cancel_build_mode()
+
+
+func _on_autosave_timer_timeout():
+	var save_name = "autosave"
+	var old_save = "user://saves/autosave.json"
+	var old_backup = "user://saves/old_autosave.json"
+
+	var dir = DirAccess.open("user://")
+	if not dir.dir_exists("saves"):
+		dir.make_dir("saves")
+
+	if FileAccess.file_exists(old_save):
+		# move to old_autosave
+		if FileAccess.file_exists(old_backup):
+			var dir_save = DirAccess.open("user://saves")
+			dir_save.remove("old_autosave.json")
+
+		var da = DirAccess.open("user://saves")
+		da.rename("autosave.json", "old_autosave.json")
+
+	Global.save_game(save_name)
+	Global.autosave_completed.emit()

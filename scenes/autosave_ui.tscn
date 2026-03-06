@@ -1,0 +1,33 @@
+[gd_scene load_steps=2 format=3 uid="uid://autosave_ui_xyz"]
+
+[ext_resource type="Script" path="res://scenes/autosave_ui.gd" id="1_script"]
+
+[node name="AutosaveUI" type="CanvasLayer"]
+process_mode = 3
+layer = 100
+script = ExtResource("1_script")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+visible = false
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 40.0
+grow_horizontal = 2
+color = Color(0, 0, 0, 0.5)
+
+[node name="Label" type="Label" parent="ColorRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Game Autosaved"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
