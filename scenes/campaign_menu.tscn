@@ -80,6 +80,10 @@ text = ""
 layout_mode = 2
 alignment = 2
 
+[node name="ResetProgressButton" type="Button" parent="MarginContainer/HBoxContainer/RightPanel/HBoxContainer"]
+layout_mode = 2
+text = "Reset Progress"
+
 [node name="BackButton" type="Button" parent="MarginContainer/HBoxContainer/RightPanel/HBoxContainer"]
 layout_mode = 2
 text = "Back"
@@ -90,5 +94,6 @@ text = "Go"
 
 [connection signal="item_selected" from="MarginContainer/HBoxContainer/LeftPanel/CampaignList" to="." method="_on_campaign_list_item_selected"]
 [connection signal="item_selected" from="MarginContainer/HBoxContainer/LeftPanel/MissionList" to="." method="_on_mission_list_item_selected"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/RightPanel/HBoxContainer/ResetProgressButton" to="." method="_on_reset_progress_button_pressed"]
 [connection signal="pressed" from="MarginContainer/HBoxContainer/RightPanel/HBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="pressed" from="MarginContainer/HBoxContainer/RightPanel/HBoxContainer/GoButton" to="." method="_on_go_button_pressed"]

@@ -26,11 +26,18 @@ func _on_campaign_list_item_selected(index):
 	_clear_mission_details()
 	go_button.disabled = true
 
+	var max_unlocked = Global.unlocked_missions.get(index, -1)
 	var missions = campaigns[index]["missions"]
-	for mission in missions:
-		mission_list.add_item(mission["name"])
+	for i in range(missions.size()):
+		mission_list.add_item(missions[i]["name"])
+		if i > max_unlocked:
+			mission_list.set_item_disabled(i, true)
 
 func _on_mission_list_item_selected(index):
+	if mission_list.is_item_disabled(index):
+		# Prevent selecting if it's disabled (in case UI somehow allows it)
+		mission_list.deselect(index)
+		return
 	selected_mission_idx = index
 	var mission = campaigns[selected_campaign_idx]["missions"][index]
 	title_label.text = mission["name"]
@@ -53,3 +60,8 @@ func _on_go_button_pressed():
 
 func _on_back_button_pressed():
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+
+func _on_reset_progress_button_pressed():
+	Global.reset_progress()
+	if selected_campaign_idx != -1:
+		_on_campaign_list_item_selected(selected_campaign_idx)

@@ -59,6 +59,8 @@ var current_mission_goals: Array = []
 var current_campaign_idx: int = -1
 var current_mission_idx: int = -1
 
+var unlocked_missions: Dictionary = {}
+
 var campaigns = [
 	{
 		"name": "Campaign 1",
@@ -84,6 +86,52 @@ var campaigns = [
 		]
 	}
 ]
+
+func _ready():
+	load_progress()
+
+func save_progress():
+	var file = FileAccess.open("user://progress.json", FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(unlocked_missions))
+
+func load_progress():
+	if FileAccess.file_exists("user://progress.json"):
+		var file = FileAccess.open("user://progress.json", FileAccess.READ)
+		if file:
+			var data = file.get_as_text()
+			var parsed = JSON.parse_string(data)
+			if typeof(parsed) == TYPE_DICTIONARY:
+				unlocked_missions = parsed
+				# Ensure keys are integers since JSON parsing might make them strings
+				var converted_dict = {}
+				for key in unlocked_missions.keys():
+					converted_dict[int(key)] = unlocked_missions[key]
+				unlocked_missions = converted_dict
+
+	# Initialize default if empty
+	if unlocked_missions.is_empty():
+		unlocked_missions[0] = 0
+		for i in range(1, campaigns.size()):
+			unlocked_missions[i] = -1
+
+func reset_progress():
+	unlocked_missions.clear()
+	# Set all missions as unavailable but Mission 1 in Campaign 1
+	# We interpret this as keeping campaign 0 mission 0 unlocked, and locking other campaigns
+	unlocked_missions[0] = 0
+	for i in range(1, campaigns.size()):
+		unlocked_missions[i] = -1 # -1 means no mission unlocked in this campaign
+	save_progress()
+
+func unlock_next_mission():
+	if current_campaign_idx >= 0 and current_campaign_idx < campaigns.size():
+		var max_unlocked = unlocked_missions.get(current_campaign_idx, 0)
+		if current_mission_idx == max_unlocked:
+			var missions_count = campaigns[current_campaign_idx]["missions"].size()
+			if max_unlocked + 1 < missions_count:
+				unlocked_missions[current_campaign_idx] = max_unlocked + 1
+				save_progress()
 
 
 func register_warehouse(warehouse):
