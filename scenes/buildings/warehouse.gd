@@ -64,7 +64,7 @@ func _add_visual_item(goods_type: String):
 
 	# Adjust properties
 	sprite.axis = Vector3.AXIS_Y
-	sprite.pixel_size = 0.001 # scale them down properly
+	sprite.pixel_size = 0.00125 # scale them down properly
 	sprite.render_priority = 1
 	# Random Y rotation and Y offset
 	sprite.rotation.y = (randi() % 4) * PI / 2.0
