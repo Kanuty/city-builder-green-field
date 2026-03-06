@@ -44,3 +44,4 @@ items_per_production = 1
 [node name="AnimatedSprite3D" parent="." index="0"]
 sprite_frames = SubResource("SpriteFrames_farm")
 animation = &"no_workers"
+pixel_size = 0.0009765625

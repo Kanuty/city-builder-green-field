@@ -97,15 +97,15 @@ func _on_consume_timer_timeout():
 
 func get_max_population(level: int) -> int:
 	if level == 0:
-		return 2
+		return 6
 	elif level == 1:
-		return 5
+		return 9
 	elif level == 2:
-		return 11
+		return 15
 	elif level == 3:
-		return 17
+		return 21
 	elif level == 4:
-		return 25
+		return 29
 	return 0
 
 func get_available_space() -> int:
