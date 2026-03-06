@@ -21,6 +21,7 @@ var warehouse_scene = preload("res://scenes/buildings/warehouse.tscn")
 var cooking_den_scene = preload("res://scenes/buildings/cooking_den.tscn")
 var house_scene = preload("res://scenes/buildings/house.tscn")
 var building_popup_scene = preload("res://scenes/ui/building_popup.tscn")
+var unit_popup_scene = preload("res://scenes/ui/unit_popup.tscn")
 var pop_scene = preload("res://scenes/units/pop.tscn")
 
 var spawner_pos: Vector3 = Vector3(-10, 0, -10)
@@ -97,6 +98,8 @@ func _unhandled_input(event):
 		if event is InputEventMouseButton:
 			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 				try_show_building_info()
+			elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+				try_show_unit_info()
 
 func handle_camera_movement(delta):
 	var viewport_size = get_viewport().get_visible_rect().size
@@ -330,6 +333,30 @@ func show_building_info(building: Node3D):
 	var popup = building_popup_scene.instantiate()
 	$UI.add_child(popup)
 	popup.setup(building)
+	get_tree().paused = true
+
+func try_show_unit_info():
+	var world_pos = get_mouse_world_pos()
+	var units = get_tree().get_nodes_in_group("units")
+	var closest_unit = null
+	var min_dist = 0.5
+
+	for unit in units:
+		var dist = world_pos.distance_to(unit.global_position)
+		if dist < min_dist:
+			min_dist = dist
+			closest_unit = unit
+
+	if closest_unit:
+		show_unit_info(closest_unit)
+
+func show_unit_info(unit: Node3D):
+	if get_tree().paused:
+		return
+
+	var popup = unit_popup_scene.instantiate()
+	$UI.add_child(popup)
+	popup.setup(unit)
 	get_tree().paused = true
 
 func cancel_build_mode():

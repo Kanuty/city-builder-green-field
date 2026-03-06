@@ -22,7 +22,7 @@ animations = [{
 "speed": 5.0
 }]
 
-[node name="Unit" type="Node3D"]
+[node name="Unit" type="Node3D" groups=["units"]]
 script = ExtResource("1_script")
 
 [node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
