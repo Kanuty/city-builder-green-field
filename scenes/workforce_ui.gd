@@ -60,6 +60,9 @@ func _update_pottery_label(value: int):
 func _update_food_label(value: int):
 	food_label.text = "Food: " + str(value)
 
+var goals_reached_popup_shown: bool = false
+var goals_reached_popup_scene = preload("res://scenes/ui/goals_reached_popup.tscn")
+
 func _process(delta):
 	if Global.current_mission_goals.is_empty():
 		$GoalsPanel.visible = false
@@ -67,6 +70,7 @@ func _process(delta):
 
 	$GoalsPanel.visible = true
 	var goals_text = "[b]Goals:[/b]\n"
+	var all_met = true
 
 	for goal in Global.current_mission_goals:
 		var is_met = false
@@ -86,5 +90,21 @@ func _process(delta):
 			goals_text += "[color=green]- " + goal["text"] + "[/color]\n"
 		else:
 			goals_text += "- " + goal["text"] + "\n"
+			all_met = false
 
 	goals_label.text = goals_text
+
+	if all_met and not goals_reached_popup_shown and Global.current_mission_goals.size() > 0:
+		if not get_tree().paused:
+			goals_reached_popup_shown = true
+			_show_goals_reached_popup()
+
+func _show_goals_reached_popup():
+	var popup = goals_reached_popup_scene.instantiate()
+	get_parent().add_child(popup)
+	get_tree().paused = true
+	popup.popup_closed.connect(_on_goals_reached_popup_closed)
+
+func _on_goals_reached_popup_closed():
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://scenes/summary_menu.tscn")
