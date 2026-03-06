@@ -17,6 +17,8 @@ func _ready():
 	back_button.pressed.connect(_on_back_button_pressed)
 	next_button.pressed.connect(_on_next_button_pressed)
 
+	Global.unlock_next_mission()
+
 	if Global.current_campaign_idx == -1 or Global.current_mission_idx == -1:
 		next_button.disabled = true
 	else:
