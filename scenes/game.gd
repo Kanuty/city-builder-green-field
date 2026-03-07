@@ -90,6 +90,7 @@ func _ready():
 
 		update_navigation_for_building(grid_pos, size, true)
 
+		load_state()
 	placement_preview.visible = false
 
 func _process(delta):
@@ -426,3 +427,90 @@ func _on_autosave_timer_timeout():
 
 	Global.save_game(save_name)
 	Global.autosave_completed.emit()
+
+
+func save_state():
+	Global.save_campaign_state()
+
+func load_state():
+	var data = Global.load_campaign_state()
+	if not data.is_empty():
+		Global.available_workforce = data.get("available_workforce", 0)
+		Global.total_population = data.get("total_population", 0)
+		Global.inventory = data.get("inventory", {
+			"Carrots": 0, "Potato": 0, "Clay": 0, "Pottery": 0, "Food": 0
+		})
+
+		# Only override unlocked missions if present, otherwise ignore
+		if data.has("unlocked_missions"):
+			var ulm = data["unlocked_missions"]
+			Global.unlocked_missions.clear()
+			for k in ulm.keys():
+				Global.unlocked_missions[int(k)] = ulm[k]
+
+		# Need to reconstruct buildings
+		for child in buildings_parent.get_children():
+			child.queue_free()
+
+		# Clear occupied_tiles and navigation_grid
+		occupied_tiles.clear()
+		navigation_grid.update()
+
+		# Remove existing units
+		for unit in get_tree().get_nodes_in_group("units"):
+			unit.queue_free()
+
+		var buildings = data.get("buildings", [])
+		for b_data in buildings:
+			var scene = load(b_data["scene_path"])
+			if scene:
+				var inst = scene.instantiate()
+				inst.scene_file_path = b_data["scene_path"]
+				buildings_parent.add_child(inst)
+				inst.global_position = Vector3(
+					b_data["global_position_x"],
+					b_data["global_position_y"],
+					b_data["global_position_z"]
+				)
+				var size = inst.get("grid_size") if "grid_size" in inst else Vector2i(1, 1)
+				var grid_pos = world_to_grid(inst.global_position - Vector3(size.x / 2.0, 0, size.y / 2.0))
+				for x in range(size.x):
+					for y in range(size.y):
+						occupied_tiles[grid_pos + Vector2i(x, y)] = inst
+				update_navigation_for_building(grid_pos, size, true)
+
+		var units = data.get("units", [])
+		for u_data in units:
+			var scene_path = u_data.get("scene_path", "")
+			if scene_path == "":
+				if u_data.get("is_pop", false):
+					scene_path = "res://scenes/units/pop.tscn"
+				else:
+					scene_path = "res://scenes/units/unit.tscn"
+
+			var pos = Vector3(u_data["global_position_x"], u_data["global_position_y"], u_data["global_position_z"])
+
+			var unit_scene = load(scene_path)
+			if unit_scene:
+				if u_data.get("is_pop", false):
+					if self.has_method("spawn_returning_pop"):
+						spawn_returning_pop(pos)
+				else:
+					var inst = unit_scene.instantiate()
+					inst.scene_file_path = scene_path
+					add_child(inst)
+					inst.global_position = pos
+					inst.returning = true
+					# We need to find a valid spawner that is NOT queued for deletion.
+					# Since we just added new buildings to buildings_parent, we should
+					# look for one that is not queued for deletion.
+					for child in buildings_parent.get_children():
+						if not child.is_queued_for_deletion():
+							inst.spawner = child
+							break
+
+		# Re-emit signals
+		Global.workforce_changed.emit(Global.available_workforce)
+		Global.population_changed.emit(Global.total_population)
+		for k in Global.inventory.keys():
+			Global.goods_updated.emit(k, Global.inventory[k])

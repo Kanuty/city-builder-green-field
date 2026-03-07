@@ -346,3 +346,28 @@ func _do_load_game(save_name: String):
 			population_changed.emit(total_population)
 			for k in inventory.keys():
 				goods_updated.emit(k, inventory[k])
+
+func save_campaign_state():
+	if current_campaign_idx >= 0:
+		var data = get_save_data()
+		var file = FileAccess.open("user://campaign_" + str(current_campaign_idx) + "_state.json", FileAccess.WRITE)
+		if file:
+			file.store_string(JSON.stringify(data))
+
+func load_campaign_state() -> Dictionary:
+	if current_campaign_idx >= 0:
+		var path = "user://campaign_" + str(current_campaign_idx) + "_state.json"
+		if FileAccess.file_exists(path):
+			var file = FileAccess.open(path, FileAccess.READ)
+			if file:
+				var data = JSON.parse_string(file.get_as_text())
+				if typeof(data) == TYPE_DICTIONARY:
+					return data
+	return {}
+
+func clear_campaign_state():
+	if current_campaign_idx >= 0:
+		var path = "user://campaign_" + str(current_campaign_idx) + "_state.json"
+		if FileAccess.file_exists(path):
+			var dir = DirAccess.open("user://")
+			dir.remove("campaign_" + str(current_campaign_idx) + "_state.json")
