@@ -17,7 +17,8 @@ code = "shader_type spatial;
 void fragment() {
     vec2 grid = fract(UV * 20.0);
     float line = step(0.95, grid.x) + step(0.95, grid.y);
-    ALBEDO = mix(vec3(0.2, 0.8, 0.2), vec3(0.1, 0.6, 0.1), clamp(line, 0.0, 1.0));
+    ALBEDO = vec3(0.1, 0.6, 0.1);
+    ALPHA = clamp(line, 0.0, 1.0);
 }"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1"]
@@ -36,6 +37,13 @@ albedo_color = Color(0, 0, 1, 0.5)
 material = SubResource("StandardMaterial3D_1")
 size = Vector2(1, 1)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_Ground"]
+albedo_color = Color(0.2, 0.8, 0.2, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_Ground"]
+material = SubResource("StandardMaterial3D_Ground")
+size = Vector2(20, 20)
+
 [node name="Game" type="Node3D" unique_id=1197098540]
 script = ExtResource("1_script")
 
@@ -51,6 +59,14 @@ transform = Transform3D(0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.7071
 projection = 1
 current = true
 size = 10.0
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0)
+mesh = SubResource("PlaneMesh_Ground")
+
+[node name="TileLayer" type="GridMap" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0)
+cell_size = Vector3(1, 1, 1)
 
 [node name="Grid" type="MeshInstance3D" parent="." unique_id=194493596]
 mesh = SubResource("PlaneMesh_1")
