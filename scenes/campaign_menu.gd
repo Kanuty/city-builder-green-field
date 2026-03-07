@@ -54,6 +54,8 @@ func _on_go_button_pressed():
 	if selected_campaign_idx != -1 and selected_mission_idx != -1:
 		Global.current_campaign_idx = selected_campaign_idx
 		Global.current_mission_idx = selected_mission_idx
+		if selected_mission_idx == 0:
+			Global.clear_campaign_state()
 		Global.current_mission_goals = campaigns[selected_campaign_idx]["missions"][selected_mission_idx].get("structured_goals", [])
 		get_tree().change_scene_to_file("res://scenes/game.tscn")
 

@@ -106,5 +106,7 @@ func _show_goals_reached_popup():
 	popup.popup_closed.connect(_on_goals_reached_popup_closed)
 
 func _on_goals_reached_popup_closed():
+	if Global.game_node:
+		Global.game_node.save_state()
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/summary_menu.tscn")
