@@ -42,6 +42,10 @@ text = "Save Game"
 layout_mode = 2
 text = "Load Game"
 
+[node name="OptionsButton" type="Button" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Options"
+
 [node name="ExitButton" type="Button" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
 text = "Exit to Menu"
@@ -66,5 +70,6 @@ layout_mode = 2
 [connection signal="pressed" from="PanelContainer/VBoxContainer/ResumeButton" to="." method="_on_resume_button_pressed"]
 [connection signal="pressed" from="PanelContainer/VBoxContainer/SaveButton" to="." method="_on_save_button_pressed"]
 [connection signal="pressed" from="PanelContainer/VBoxContainer/LoadButton" to="." method="_on_load_button_pressed"]
+[connection signal="pressed" from="PanelContainer/VBoxContainer/OptionsButton" to="." method="_on_options_button_pressed"]
 [connection signal="pressed" from="PanelContainer/VBoxContainer/ExitButton" to="." method="_on_exit_button_pressed"]
 [connection signal="confirmed" from="SaveDialog" to="." method="_on_save_dialog_confirmed"]
