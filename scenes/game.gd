@@ -260,8 +260,8 @@ func place_building(grid_pos: Vector2i):
 	if new_building:
 		new_building.scene_file_path = scene_path
 		var size = new_building.get("grid_size") if "grid_size" in new_building else Vector2i(1, 1)
-		buildings_parent.add_child(new_building)
 		new_building.global_position = grid_to_world_sized(grid_pos, size)
+		buildings_parent.add_child(new_building)
 
 		for x in range(size.x):
 			for y in range(size.y):
@@ -466,12 +466,12 @@ func load_state():
 			if scene:
 				var inst = scene.instantiate()
 				inst.scene_file_path = b_data["scene_path"]
-				buildings_parent.add_child(inst)
 				inst.global_position = Vector3(
 					b_data["global_position_x"],
 					b_data["global_position_y"],
 					b_data["global_position_z"]
 				)
+				buildings_parent.add_child(inst)
 				var size = inst.get("grid_size") if "grid_size" in inst else Vector2i(1, 1)
 				var grid_pos = world_to_grid(inst.global_position - Vector3(size.x / 2.0, 0, size.y / 2.0))
 				for x in range(size.x):
@@ -498,8 +498,8 @@ func load_state():
 				else:
 					var inst = unit_scene.instantiate()
 					inst.scene_file_path = scene_path
-					add_child(inst)
 					inst.global_position = pos
+					add_child(inst)
 					inst.returning = true
 					# We need to find a valid spawner that is NOT queued for deletion.
 					# Since we just added new buildings to buildings_parent, we should
