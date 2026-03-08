@@ -303,12 +303,12 @@ func _do_load_game(save_name: String):
 					var scene = load(b_data["scene_path"])
 					if scene:
 						var inst = scene.instantiate()
-						game_node.buildings_parent.add_child(inst)
 						inst.global_position = Vector3(
 							b_data["global_position_x"],
 							b_data["global_position_y"],
 							b_data["global_position_z"]
 						)
+						game_node.buildings_parent.add_child(inst)
 						var size = inst.get("grid_size") if "grid_size" in inst else Vector2i(1, 1)
 						var grid_pos = game_node.world_to_grid(inst.global_position - Vector3(size.x / 2.0, 0, size.y / 2.0))
 						for x in range(size.x):
@@ -335,8 +335,8 @@ func _do_load_game(save_name: String):
 						else:
 							# For now just instantiating a dummy unit that returns, as reconstructing full delivery state is complex
 							var inst = unit_scene.instantiate()
-							game_node.add_child(inst)
 							inst.global_position = pos
+							game_node.add_child(inst)
 							inst.returning = true
 							if game_node.buildings_parent.get_child_count() > 0:
 								inst.spawner = game_node.buildings_parent.get_child(0) # send somewhere to despawn or wait
