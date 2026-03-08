@@ -3,6 +3,9 @@ extends CanvasLayer
 @onready var save_dialog = $SaveDialog
 @onready var save_name_edit = $SaveDialog/VBoxContainer/SaveNameEdit
 
+var load_game_scene = preload("res://scenes/load_game_menu.tscn")
+var options_scene = preload("res://scenes/options_menu.tscn")
+
 func _ready():
 	visible = false
 
@@ -30,8 +33,12 @@ func _on_save_button_pressed():
 	save_dialog.popup_centered()
 
 func _on_load_button_pressed():
-	get_tree().paused = false
-	get_tree().change_scene_to_file("res://scenes/load_game_menu.tscn")
+	var load_menu = load_game_scene.instantiate()
+	add_child(load_menu)
+
+func _on_options_button_pressed():
+	var options_menu = options_scene.instantiate()
+	add_child(options_menu)
 
 func _on_exit_button_pressed():
 	get_tree().paused = false

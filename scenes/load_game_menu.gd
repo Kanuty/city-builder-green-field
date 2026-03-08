@@ -35,9 +35,12 @@ func _on_save_list_item_selected(index):
 
 func _on_load_button_pressed():
 	if selected_save != "":
+		get_tree().paused = false
 		get_tree().change_scene_to_file("res://scenes/game.tscn")
 		Global.load_game_request(selected_save)
 
 func _on_back_button_pressed():
 	if get_tree().current_scene.name == "LoadGameMenu":
 		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	else:
+		queue_free()

@@ -8,7 +8,10 @@ func _ready():
 		slider.value = linear
 
 func _on_back_button_pressed():
-	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	if get_tree().current_scene.name == "OptionsMenu":
+		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	else:
+		queue_free()
 
 func _on_music_volume_slider_value_changed(value: float):
 	if MusicPlayer:
