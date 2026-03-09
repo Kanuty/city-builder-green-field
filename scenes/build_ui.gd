@@ -4,6 +4,17 @@ signal building_selected(building_type: String)
 signal destruction_mode_toggled(active: bool)
 
 @onready var destroy_button = $Panel/MarginContainer/VBoxContainer/DestroyButton
+@onready var vbox_container = $Panel/MarginContainer/VBoxContainer
+
+func _ready():
+	var campaign_idx = Global.current_campaign_idx
+	var mission_idx = Global.current_mission_idx
+
+	for child in vbox_container.get_children():
+		if child is Button and child.name != "DestroyButton":
+			var building_name = child.text
+			var is_available = Global.is_building_available(campaign_idx, mission_idx, building_name)
+			child.visible = is_available
 
 func _on_carrot_farm_button_pressed():
 	untoggle_destroy_button()
