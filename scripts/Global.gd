@@ -61,6 +61,7 @@ var current_campaign_idx: int = -1
 var current_mission_idx: int = -1
 
 var unlocked_missions: Dictionary = {}
+var available_buildings_config: Dictionary = {}
 
 var campaigns = [
 	{
@@ -90,6 +91,26 @@ var campaigns = [
 
 func _ready():
 	load_progress()
+	load_buildings_config()
+
+func load_buildings_config():
+	if FileAccess.file_exists("res://buildings_config.json"):
+		var file = FileAccess.open("res://buildings_config.json", FileAccess.READ)
+		if file:
+			var data = file.get_as_text()
+			var parsed = JSON.parse_string(data)
+			if typeof(parsed) == TYPE_DICTIONARY:
+				available_buildings_config = parsed
+
+func is_building_available(campaign_idx: int, mission_idx: int, building_name: String) -> bool:
+	var c_key = str(campaign_idx)
+	var m_key = str(mission_idx)
+	if available_buildings_config.has(c_key):
+		if available_buildings_config[c_key].has(m_key):
+			var allowed = available_buildings_config[c_key][m_key]
+			if typeof(allowed) == TYPE_ARRAY:
+				return building_name in allowed
+	return true
 
 func save_progress():
 	var file = FileAccess.open("user://progress.json", FileAccess.WRITE)
