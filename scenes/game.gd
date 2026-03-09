@@ -90,7 +90,7 @@ func _ready():
 
 		update_navigation_for_building(grid_pos, size, true)
 
-		load_state()
+	load_state()
 	placement_preview.visible = false
 
 func _process(delta):

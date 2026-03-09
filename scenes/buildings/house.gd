@@ -56,6 +56,7 @@ func try_fetch_goods(goods_type: String, needed_amount: int) -> int:
 			if target_warehouse.reserve_for_fetch(amount_to_fetch, goods_type):
 				if unit_type:
 					var unit = unit_type.instantiate()
+					unit.scene_file_path = unit_type.resource_path
 					unit.global_position = global_position
 					get_parent().add_child(unit)
 					unit.delivery_finished.connect(_on_unit_delivery_finished)

@@ -324,6 +324,7 @@ func _do_load_game(save_name: String):
 					var scene = load(b_data["scene_path"])
 					if scene:
 						var inst = scene.instantiate()
+						inst.scene_file_path = b_data["scene_path"]
 						inst.global_position = Vector3(
 							b_data["global_position_x"],
 							b_data["global_position_y"],
@@ -356,6 +357,7 @@ func _do_load_game(save_name: String):
 						else:
 							# For now just instantiating a dummy unit that returns, as reconstructing full delivery state is complex
 							var inst = unit_scene.instantiate()
+							inst.scene_file_path = scene_path
 							inst.global_position = pos
 							game_node.add_child(inst)
 							inst.returning = true
