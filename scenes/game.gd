@@ -67,8 +67,8 @@ func _ready():
 	var mat = StandardMaterial3D.new()
 	mat.albedo_color = Color(1, 0, 0) # Red
 	spawner_mesh.material_override = mat
+	spawner_mesh.position = spawner_pos
 	add_child(spawner_mesh)
-	spawner_mesh.global_position = spawner_pos
 
 	pop_spawn_timer = Timer.new()
 	pop_spawn_timer.wait_time = 2.0
@@ -260,7 +260,7 @@ func place_building(grid_pos: Vector2i):
 	if new_building:
 		new_building.scene_file_path = scene_path
 		var size = new_building.get("grid_size") if "grid_size" in new_building else Vector2i(1, 1)
-		new_building.global_position = grid_to_world_sized(grid_pos, size)
+		new_building.position = grid_to_world_sized(grid_pos, size)
 		buildings_parent.add_child(new_building)
 
 		for x in range(size.x):
@@ -347,16 +347,16 @@ func spawn_pop(target_house: Node3D):
 	if pop_scene:
 		var pop = pop_scene.instantiate()
 		pop.scene_file_path = pop_scene.resource_path
+		pop.position = spawner_pos
 		add_child(pop)
-		pop.global_position = spawner_pos
 		pop.setup(target_house, spawner_pos, false)
 
 func spawn_returning_pop(start_pos: Vector3):
 	if pop_scene:
 		var pop = pop_scene.instantiate()
 		pop.scene_file_path = pop_scene.resource_path
+		pop.position = start_pos
 		add_child(pop)
-		pop.global_position = start_pos
 		pop.setup(null, spawner_pos, true)
 
 func show_building_info(building: Node3D):
@@ -466,7 +466,7 @@ func load_state():
 			if scene:
 				var inst = scene.instantiate()
 				inst.scene_file_path = b_data["scene_path"]
-				inst.global_position = Vector3(
+				inst.position = Vector3(
 					b_data["global_position_x"],
 					b_data["global_position_y"],
 					b_data["global_position_z"]
@@ -498,7 +498,7 @@ func load_state():
 				else:
 					var inst = unit_scene.instantiate()
 					inst.scene_file_path = scene_path
-					inst.global_position = pos
+					inst.position = pos
 					add_child(inst)
 					inst.returning = true
 					# We need to find a valid spawner that is NOT queued for deletion.
