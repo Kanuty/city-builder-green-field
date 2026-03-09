@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://load_game_menu_xyz"]
+[gd_scene load_steps=2 format=3 uid="uid://save_game_menu_xyz"]
 
-[ext_resource type="Script" path="res://scenes/load_game_menu.gd" id="1_script"]
+[ext_resource type="Script" path="res://scenes/save_game_menu.gd" id="1_script"]
 
-[node name="LoadGameMenu" type="Control"]
+[node name="SaveGameMenu" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,8 +27,12 @@ grow_vertical = 2
 
 [node name="Label" type="Label" parent="VBoxContainer"]
 layout_mode = 2
-text = "Load Game"
+text = "Save Game"
 horizontal_alignment = 1
+
+[node name="SaveNameEdit" type="LineEdit" parent="VBoxContainer"]
+layout_mode = 2
+placeholder_text = "Enter save name..."
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -43,15 +47,15 @@ size_flags_vertical = 3
 layout_mode = 2
 alignment = 1
 
-[node name="LoadButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+[node name="SaveButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
-text = "Load"
+text = "Save"
 
 [node name="BackButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 text = "Back"
 
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/LoadButton" to="." method="_on_load_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/SaveButton" to="." method="_on_save_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
 
 [node name="DeleteConfirmDialog" type="ConfirmationDialog" parent="."]

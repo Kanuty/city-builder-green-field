@@ -1,7 +1,8 @@
 extends Control
 
 @onready var save_list = $VBoxContainer/ScrollContainer/SaveList
-@onready var load_button = $VBoxContainer/HBoxContainer/LoadButton
+@onready var save_button = $VBoxContainer/HBoxContainer/SaveButton
+@onready var save_name_edit = $VBoxContainer/SaveNameEdit
 @onready var delete_confirm_dialog = $DeleteConfirmDialog
 
 var save_files = []
@@ -10,7 +11,8 @@ var save_to_delete = ""
 
 func _ready():
 	_refresh_save_list()
-	load_button.disabled = true
+	save_name_edit.text = "Save_" + Time.get_datetime_string_from_system().replace(":", "-").replace("T", "_")
+
 
 func _refresh_save_list():
 	for child in save_list.get_children():
@@ -50,7 +52,7 @@ func _refresh_save_list():
 
 func _on_save_selected(save_name: String):
 	selected_save = save_name
-	load_button.disabled = false
+	save_name_edit.text = save_name
 
 func _on_delete_requested(save_name: String):
 	save_to_delete = save_name
@@ -65,19 +67,21 @@ func _on_delete_confirmed():
 
 		if selected_save == save_to_delete:
 			selected_save = ""
-			load_button.disabled = true
+			save_name_edit.text = ""
+
 
 		save_to_delete = ""
 		_refresh_save_list()
 
-func _on_load_button_pressed():
-	if selected_save != "":
-		get_tree().paused = false
-		get_tree().change_scene_to_file("res://scenes/game.tscn")
-		Global.load_game_request(selected_save)
+func _on_save_button_pressed():
+	var save_name = save_name_edit.text.strip_edges()
+	if save_name == "":
+		save_name = "save"
+	Global.save_game(save_name)
+	queue_free()
 
 func _on_back_button_pressed():
-	if get_tree().current_scene.name == "LoadGameMenu":
+	if get_tree().current_scene.name == "SaveGameMenu":
 		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 	else:
 		queue_free()
