@@ -275,11 +275,14 @@ func load_game_request(save_name: String):
 func _do_load_game(save_name: String):
 
 
-	var current_scene_name = get_tree().current_scene.name
+	var current_scene_name = ""
+	if get_tree().current_scene:
+		current_scene_name = get_tree().current_scene.name
+
 	if current_scene_name != "Game":
 		# wait for scene change instead of arbitrary timeout
 		await get_tree().process_frame
-		while get_tree().current_scene.name != "Game":
+		while not get_tree().current_scene or get_tree().current_scene.name != "Game":
 			await get_tree().process_frame
 		# wait another frame for ready to complete
 		await get_tree().process_frame
@@ -325,7 +328,7 @@ func _do_load_game(save_name: String):
 					if scene:
 						var inst = scene.instantiate()
 						inst.scene_file_path = b_data["scene_path"]
-						inst.global_position = Vector3(
+						inst.position = Vector3(
 							b_data["global_position_x"],
 							b_data["global_position_y"],
 							b_data["global_position_z"]
@@ -358,7 +361,7 @@ func _do_load_game(save_name: String):
 							# For now just instantiating a dummy unit that returns, as reconstructing full delivery state is complex
 							var inst = unit_scene.instantiate()
 							inst.scene_file_path = scene_path
-							inst.global_position = pos
+							inst.position = pos
 							game_node.add_child(inst)
 							inst.returning = true
 							if game_node.buildings_parent.get_child_count() > 0:
